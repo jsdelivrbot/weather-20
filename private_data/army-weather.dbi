@@ -1,0 +1,108 @@
+{
+   "weather": {
+      "global": {
+         "_id": "L1mg6zE06W1wltzT"
+      },
+      "local": {
+         "1111056000": {
+            "_id": "Nx4QwmydcvtdyfSk"
+         },
+         "4165039000": {
+            "_id": "Iw7DeoiwBykhlKNL"
+         }
+      },
+      "live": {
+         "1111056000": {
+            "_id": "CgVzA8YVl3qhxmaw"
+         },
+         "4165039000": {
+            "_id": "7pfkQr4DMK6ERFKM"
+         }
+      },
+      "weekly": {
+         "_id": "kBHPgr7zzpGKuYp0"
+      }
+   },
+   "life": {
+      "uv": {
+         "_id": "mmHS6GkTfwUCavyi"
+      },
+      "enteritis": {
+         "_id": "kH4bQVZmLBBdKcw6"
+      },
+      "stroke": {
+         "_id": "GMOMskl9ikILLQFn"
+      },
+      "asthma": {
+         "_id": "jLfxyc3RbDVpAxNy"
+      },
+      "heatindex": {
+         "_id": "lEOOyPQbbFIoAlZQ"
+      },
+      "discomfort": {
+         "_id": "7FHhUfb54zunppcE"
+      },
+      "heatdata": {
+         "_id": "AbqyXHq5KvvW2r2z"
+      }
+   },
+   "dust": {
+      "station": {
+         "정릉로": {
+            "_id": "RSkF26vb2av0tRC4"
+         },
+         "연천읍": {
+            "_id": "gEQMCJb8bgeKpaUo"
+         },
+         "관인면": {
+            "_id": "5mNTFSt0H3rLioTC"
+         }
+      },
+      "root": {
+         "_id": "5fuWSuUXOahFuPKs"
+      }
+   },
+   "mapdata": {
+      "temp": {
+         "_id": "KUwkhns3ddxSpqgR"
+      },
+      "tempmax": {
+         "_id": "B3y3MS1AnJHcgf9X"
+      },
+      "rainamount": {
+         "_id": "QHn1QMubVLnmt7M2"
+      },
+      "rain": {
+         "_id": "imQASVk4MKxC7ZYO"
+      },
+      "sky": {
+         "_id": "FXx3sSc8iJGEDnBr"
+      },
+      "wave": {
+         "_id": "1ZWccm6zp9BoWvGv"
+      },
+      "humidity": {
+         "_id": "JsSq3KpxZabq5DYW"
+      }
+   },
+   "awslive": {
+      "awslive": {
+         "_id": "Y24JtaSO5nISbOiM"
+      }
+   },
+   "airquality": {
+      "dustpic": {
+         "_id": "cM8CQXm4W2hL5Rfi"
+      }
+   },
+   "dustmap": {
+      "dustgif": {
+         "_id": "M08bQPiUQG3wB8bg"
+      }
+   },
+   "warning": {
+      "warning": {
+         "_id": "McTSmSOkHSX5cMxx"
+      }
+   }
+}

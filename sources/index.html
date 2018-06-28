@@ -1,0 +1,443 @@
+<html>
+	<head>
+		<title>ARMY-WEATHER</title>
+		<meta charset="UTF-8">
+
+		<!--MOBILE DEVICE FRAME OPTIMIZE META CODE-->
+		<!-- 0.8 IS BEST.. MIGHT BE? -->
+		<meta name="viewport"
+			  content="width=device-width,
+					   height=device-height,
+					   user-scalable=no,
+					   initial-scale=0.8,
+					   minimum-scale=0.8,
+					   maximum-scale=0.8">
+
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/p5.min.js">
+		</script>
+
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/anime.min.js">
+		</script>
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.6.0/tiny-slider.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.6.0/min/tiny-slider.js"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.3.3/js/swiper.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.3.3/css/swiper.min.css">
+
+		<script type="text/javascript" src="http://l2.io/ip.js?var=clientExternalIp"></script>
+
+		<!-- Highcharts  -->
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/highcharts.js">
+		</script>
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/highcharts-more.js">
+		</script>
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/map.js">
+		</script>
+
+		<!-- 반드시 앱 css가 마지막에 위치해야합니다.  -->
+		<link href='/resources/style/style.css'
+			  rel='stylesheet' />
+	</head>
+	<body>
+		<div id=app>
+			<!-- 잠시 기다려주세요 스피너  -->
+			<div id=spinner class="unselectable">
+				<div class="spinner"></div>
+				<a id=spinner-popup-text>잠시 기다려주세요...</a>
+			</div>
+
+			<!-- 팝업 공간  -->
+			<div id=popup>
+
+				<!-- 로그인창 팝업  -->
+				<div id=login-question class="unselectable">
+					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+					<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
+					<div id="login-question-info1">
+						<a id="login-question-info2">"ARMY-WEATHER"</a>
+						<a id="login-question-info3">
+							<br>서비스를 이용하시려면<br>회원가입 또는 접속을 해주세요.
+						</a>
+					</div>
+					<div id='login-question-register-or-unregister' class='animated infinite updown'>
+						<a id=login-question-register-or-unregister-info1>가입하기</a>
+					</div>
+					<div id='login-question-login-or-logout' class='animated infinite updown'>
+						<a id=login-question-login-or-logout-info1>접속하기</a>
+					</div>
+					<div id=login-question-id class='login-question-info'>아이디</div>
+					<input id=login-question-id-input  class='login-question-input'></input>
+					<div id=login-question-pw class='login-question-info'>암호</div>
+					<input id=login-question-pw-input type="password" class='login-question-input'></input>
+					<br><a id="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
+					<div id=login-question-close class='question-close'>
+						<a class="question-close-info">X</a>
+					</div>
+				</div>
+
+
+				<!-- 로그인창 팝업  -->
+				<div id=address-question class="unselectable">
+					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+					<div id=address-question-close class='question-close'>
+						<a class="question-close-info">X</a>
+					</div><br><br>
+					<a class="address-context">확인하려는 주소를 선택해주세요.</a>
+					<div id=address-box>
+						<div id=address-slider>	
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+				<!-- 메뉴바 공간  -->
+			<div id=menu class="unselectable">
+
+				<!-- 메뉴 로고  -->
+				<div id=menu-logo class="animated infinite smallwave">
+					<img src="resources/icons/main.png" width="50px" height="50px"></img>
+					<a id=menu-logo-info><br>ARMY<br>WEATHER</a>
+				</div>
+
+				<!-- 메뉴바 목록  -->
+				<div id=menu-bar>
+					<div id=menu-bar-weather class=menu-item-selected>날씨정보</div>
+					<div id=menu-bar-health class=menu-item>생활날씨</div>
+					<div id=menu-bar-life class=menu-item>천문기상</div>
+				</div>
+
+				<!-- 메뉴 - 지수작성 버튼  -->
+				<div id=account-logo class="animated infinite smallwave unselectable">
+					<img id=menu-account-icon src="resources/icons/menu.png" width="30px" height="30px"></img>
+					<a id=menu-account-info>온도지수보고</a>
+				</div>
+			</div>
+			<div id=container>
+				<div id=life>
+					<div name=content class="unselectable">
+						<div id=life-box>
+							<div id=day-weather-moon>
+
+								<div id="day-weather-moon-outline"></div>
+								<div class=day-weather-template-5>
+									<img src="resources/icons/sunset.png"></img><br>
+									<a id=day-weather-sun-rise-info3 class=day-weather-temp-info>BMNT: </a>
+									<a id=day-weather-sun-rise-info4 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-sun-set-info3 class=day-weather-temp-info>EENT: </a>
+									<a id=day-weather-sun-set-info4 class=day-weather-temp>계산중..</a>
+								</div>
+
+								<div class=day-weather-template-5>
+									<img src="resources/icons/sunrise.png"></img><br>
+									<a id=day-weather-sun-rise-info1 class=day-weather-temp-info>일출: </a>
+									<a id=day-weather-sun-rise-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-sun-set-info1 class=day-weather-temp-info>일몰: </a>
+									<a id=day-weather-sun-set-info2 class=day-weather-temp>계산중..</a>
+								</div>
+
+								<div class=day-weather-template-5>
+									<img src="resources/icons/moon.png"></img><br>
+									<a id=day-weather-moon-rise-info1 class=day-weather-temp-info>월출: </a>
+									<a id=day-weather-moon-rise-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-moon-set-info6 class=day-weather-temp-info>월몰: </a>
+									<a id=day-weather-moon-set-info7 class=day-weather-temp>계산중..</a>
+								</div>
+
+								<div class=day-weather-template-5>
+									<img src="resources/icons/sunrise.png"></img><br>
+									<a id=day-weather-moon-set-info1 class=day-weather-temp-info>월광: </a>
+									<a id=day-weather-moon-set-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-moon-set-info3 class=day-weather-temp-info>무월광: </a>
+									<a id=day-weather-moon-set-info4 class=day-weather-temp>계산중..</a>
+								</div>
+
+								<div id=calendar-info-slider-box class="calendar-info-slider swiper-container">
+									<!-- 전국예보 슬라이더 -->
+									<div class=swiper-wrapper>
+
+										<div class="swiper-slide">
+											<div class="animated infinite updown unselectable">
+												<div class="month"> 
+													<ul style="top: 10px;position:  relative;">
+														<li id="main-month-prev" class="prev">❮</li>
+														<li id="main-month-next" class="next">❯</li>
+														<li><a id="main-current-month">-</a><br>
+															<span style="font-size:18px"><a id="main-current-year">-</a></span>
+														</li>
+													</ul>
+												</div>
+												<div class="weekdays-outline"></div>
+												<div class="weekdays">
+													 <div style="color: tomato;">일</div>
+													 <div>월</div>
+													 <div>화</div>
+													 <div>수</div>
+													 <div>목</div>
+													 <div>금</div>
+													 <div style="color: #15dbfd;">토</div>
+												</div>
+												<ul id=main-plan-calendar class="days"></ul>
+											</div>
+										</div>
+
+										<div class="swiper-slide">
+											<div class="animated infinite updown unselectable">
+												<div class="month"> 
+													<ul style="top: 10px;position:  relative;">
+														<li id="bmnt-month-prev" class="prev">❮</li>
+														<li id="bmnt-month-next" class="next">❯</li>
+														<li><a id="bmnt-current-month">-</a><br>
+															<span style="font-size:18px"><a id="bmnt-current-year">-</a></span>
+														</li>
+													</ul>
+												</div>
+												<div class="weekdays-outline"></div>
+												<div class="weekdays">
+													 <div style="color: tomato;">일</div>
+													 <div>월</div>
+													 <div>화</div>
+													 <div>수</div>
+													 <div>목</div>
+													 <div>금</div>
+													 <div style="color: #15dbfd;">토</div>
+												</div>
+												<ul id=bmnt-plan-calendar class="days"></ul>
+											</div>
+										</div>
+
+										<div class="swiper-slide">
+											<div class="animated infinite updown unselectable">
+												<div class="month"> 
+													<ul style="top: 10px;position:  relative;">
+														<li id="sun-month-prev" class="prev">❮</li>
+														<li id="sun-month-next" class="next">❯</li>
+														<li><a id="sun-current-month">-</a><br>
+															<span style="font-size:18px"><a id="sun-current-year">-</a></span>
+														</li>
+													</ul>
+												</div>
+												<div class="weekdays-outline"></div>
+												<div class="weekdays">
+													 <div style="color: tomato;">일</div>
+													 <div>월</div>
+													 <div>화</div>
+													 <div>수</div>
+													 <div>목</div>
+													 <div>금</div>
+													 <div style="color: #15dbfd;">토</div>
+												</div>
+												<ul id=sun-plan-calendar class="days"></ul>
+											</div>
+										</div>
+
+										<div class="swiper-slide">
+											<div class="animated infinite updown unselectable">
+												<div class="month"> 
+													<ul style="top: 10px;position:  relative;">
+														<li id="moon-month-prev" class="prev">❮</li>
+														<li id="moon-month-next" class="next">❯</li>
+														<li><a id="moon-current-month">-</a><br>
+															<span style="font-size:18px"><a id="moon-current-year">-</a></span>
+														</li>
+													</ul>
+												</div>
+												<div class="weekdays-outline"></div>
+												<div class="weekdays">
+													 <div style="color: tomato;">일</div>
+													 <div>월</div>
+													 <div>화</div>
+													 <div>수</div>
+													 <div>목</div>
+													 <div>금</div>
+													 <div style="color: #15dbfd;">토</div>
+												</div>
+												<ul id=moon-plan-calendar class="days"></ul>
+											</div>
+										</div>
+
+									</div>
+									<div class="swiper-pagination"></div>
+								</div>
+
+								<img src="resources/icons/placeholder.png" class=coord-img></img>
+								<div id=coord-mgrs-info class='coord-description'>
+									<br>GPS를 활용한 천문기상 계산하기<br></div>
+								<div id=coord-mgrs-info class='coord-info'>MGRS좌표</div>
+								<input id=coord-mgrs-input  class='coord-input' value="52SCE 31126 99272"></input>
+								<div id=coord-latlng-info class='coord-info'>경위도좌표</div>
+								<input id=coord-latlng-input  class='coord-input' value="36.12345 127.12345"></input>
+								<div id=coord-time-info class='coord-info'>해당시간대</div>
+								<input id=coord-time-input  class='coord-input' value="2018/06/10 10:26:10"></input>
+								<br><br>
+
+								<div class='coord-button-box'>
+									<div id=coord-time-newest class='coord-button'>
+										<a class='coord-button-info'>현재시간 얻기</a>
+									</div>
+									<div id=coord-newest class='coord-button'>
+										<a class='coord-button-info'>현재위치 얻기</a>
+									</div>
+									<div id=coord-apply class='coord-button'>
+										<a class='coord-button-info'>입력내용 반영</a>
+									</div>
+								</div>
+								<div class='coord-button-box'>
+									<div id=coord-mgrs-to-latlng class='coord-button'>
+										<a class='coord-button-info'>MGRS->경위도</a>
+									</div>
+									<div id=coord-latlng-to-mgrs class='coord-button'>
+										<a class='coord-button-info'>경위도->MGRS</a>
+									</div>
+									<div id=coord-auto-newest class='coord-button'>
+										<a class='coord-button-info'>실시간 갱신</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div name=graphic id="life-graphic">
+						<canvas id=life-flick></canvas>
+						<div id=wave></div>
+					</div>
+				</div>
+
+				<div id=weather>
+					<div name=content>
+						<div id=read-guide class="animated infinite updown">
+							<a id=read-guide-info1>새로고침<a>
+							<img id=read-guide-info2 src="resources/icons/refresh.png"></img>
+						</div>
+						<div id=guides>
+							<!-- GUIDE IMAGES -->
+							<img id=guide-image></img>
+							<a id=guides-progress>● ○ ○ ○ ○</a>
+							<div id="guide-prev">
+								<a id="guide-prev-text">❮</a>
+							</div>
+							<div id="guide-next">
+								<a id="guide-next-text">❯</a>
+							</div>
+						</div>
+						<div id=today class="unselectable">
+							<div id=day-print class="animated infinite updown">
+								<div id=day-weather-location>
+									<div class="location-small-box">
+										<a class="location-small-box-name">영북면</a>
+										<br/>
+									</div>
+								</div>
+
+								<div id=day-weather-status>
+									<div id="day-weather-outline">
+										<div id=local-info-slider-box class="swiper-container local-info">
+											<!-- 주간정보 슬라이더 -->
+										</div>
+									</div>
+									
+									<div id=day-top-weather-box>
+										<img id=day-weather-status-img src="resources/icons/pack-1/21.png" class=day-status-img></img>
+										<a id=day-weather-info1>현재 온도: </a>
+										<a id=day-weather-info2 class=day-weather-temp>-</a><br>
+										<a id=day-weather-info4>온도 지수: </a>
+										<a id=day-weather-info5 class=day-weather-temp>-</a>
+										<a id=day-weather-info6 class=day-weather-temp-sub>(-시 기준)</a><br>
+										<br><br><br>
+
+										<div id=day-weather-box>
+											<div id=day-weather-temp class=day-weather-template-6>
+												<a id=day-weather-temp-info1 class=day-weather-temp-info>바람: </a>
+												<a id=day-weather-temp-info2 class=day-weather-temp>-</a><br>
+												<a id=day-weather-temp-info3 class=day-weather-temp-info>오존: </a>
+												<a id=day-weather-temp-info4 class=day-weather-temp>-</a>
+												<a id=day-weather-temp-info5 class=day-weather-temp-sub>(좋음)</a><br>
+											</div>
+
+											<div id=day-weather-wind class=day-weather-template-6>
+												<a id=day-weather-wind-info1 class=day-weather-temp-info>미세먼지: </a>
+												<a id=day-weather-wind-info2 class=day-weather-temp>-</a>
+												<a id=day-weather-wind-info3 class=day-weather-temp-sub>(-)</a><br>
+												<a id=day-weather-wind-info4 class=day-weather-temp-info>초미세먼지: </a>
+												<a id=day-weather-wind-info5 class=day-weather-temp>-</a>
+												<a id=day-weather-wind-info6 class=day-weather-temp-sub>(-)</a><br>
+											</div>
+
+											<div id=day-weather-rain class=day-weather-template-6>
+												<a id=day-weather-rain-info1 class=day-weather-temp-info>식중독지수: </a>
+												<a id=day-weather-rain-info2 class=day-weather-temp>-</a>
+												<a id=day-weather-rain-info5 class=day-weather-temp-sub>(-)</a><br>
+												<a id=day-weather-rain-info3 class=day-weather-temp-info>누적 강수량: </a>
+												<a id=day-weather-rain-info4 class=day-weather-temp>-</a>
+											</div>
+										</div>
+										<br>
+									</div>
+
+									<div id=local-weather-box-outline>
+										<div id=global-info-slider-box class="global-info-slider swiper-container">
+											<!-- 전국예보 슬라이더 -->
+											<div class=swiper-wrapper>
+											</div>
+										</div>
+									</div>
+							
+									<div id=local-weather-box>
+										<div id=local-weather-box-type class="local-weather-message">
+											<!-- 날씨 슬라이더 정보분류칸 -->
+										</div>
+
+										<div id=local-weather-slider-box class="local-weather-slider swiper-container">
+											<!-- 날씨 슬라이더 -->
+										</div>
+									</div>
+
+									<div class='weather-type-button-box'>
+										<div id=weather-type-currently class='weather-type-button'>
+											<a class='weather-type-button-info'>현재 예보</a>
+										</div>
+										<div id=weather-type-weekly class='weather-type-button'>
+											<a class='weather-type-button-info'>주간 예보</a>
+										</div>
+										<div id=weather-type-korea class='weather-type-button'>
+											<a class='weather-type-button-info'>전국 예보</a>
+										</div>
+										<div id=weather-type-dust class='weather-type-button'>
+											<a class='weather-type-button-info'>기상 특보</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id=month class="animated infinite updown unselectable"></div>
+					</div>
+
+					<div name=graphic id="weather-graphic">
+						<canvas id=weather-flick></canvas>
+					</div>
+				</div>
+				
+				<div id=health>
+					<div name=content>
+						<div id=health-pannel class="unselectable"></div>
+					</div>
+
+					<div name=graphic id="health-graphic">
+						<canvas id=health-flick></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
