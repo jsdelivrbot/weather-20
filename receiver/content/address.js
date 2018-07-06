@@ -65,6 +65,21 @@ export default function Address(app, database) {
 			return
 		}
 
+		// 검색 요청이 있는 경우 검색 값 출력
+		//searchAddress
+		if(typeof requestSchema['search'] != 'undefined'){
+			let searchTarget = [] 
+			try{
+				searchTarget = requestSchema['search'].split(' ')
+			}catch(e){}
+
+			let foundedCoord = searchAddress(searchTarget)
+			response.send({data: foundedCoord})
+			response.end()
+			return
+		}
+
+
 		// 좌표 요청이 있는 경우 해당좌표에 가장 근접한 지역정보값 표시
 		if(typeof requestSchema['coord'] != 'undefined'){
 
@@ -118,6 +133,45 @@ function getByPath(obj, value) {
 	return obj
 }
 
+export function getAddressData(paramKey){
+	let result = null
+	try{
+		result = getByPath(codeData, paramKey)
+	}catch(e){}
+	return result
+}
+
+export function searchAddress(keywords){
+	let foundedAddress = []
+	for(let firstLevel of Object.keys(codeData)){
+		for(let secondLevel of Object.keys(codeData[firstLevel])){
+			for(let thirdLevel of Object.keys(codeData[firstLevel][secondLevel])){
+
+				let key = `${firstLevel} ${secondLevel} ${thirdLevel}`
+				let innerLevelData = codeData[firstLevel][secondLevel][thirdLevel]
+
+				let isMatched = true
+				for(let keyword of keywords){
+					if(key.indexOf(keyword) === -1){
+						isMatched = false
+						break
+					}
+				}
+
+				// 찾는 값일 때만 추가
+				if(isMatched){
+					innerLevelData.push(`${firstLevel}.${secondLevel}.${thirdLevel}`)
+					foundedAddress.push(innerLevelData)
+				}
+				
+				// 만약 50개가 넘어갔으면 중단
+				if(foundedAddress.length >= 50) return foundedAddress
+			}
+		}
+	}
+	return foundedAddress
+}
+
 export function findAddress(paramLat, paramLong){
 	let lat = Number(paramLat)
 	let long = Number(paramLong)
@@ -169,7 +223,7 @@ export function findRootAddress(paramLat, paramLong){
 			foundData = {
 				name: rootAddressName,
 				x: rootAddress[0],
-				y: rootAddress[0],
+				y: rootAddress[1],
 				diff: coordDiff
 			}
 		}
@@ -194,7 +248,7 @@ export function findRootDetailAddress(paramLat, paramLong){
 			foundData = {
 				name: rootAddressName,
 				x: rootAddress[0],
-				y: rootAddress[0],
+				y: rootAddress[1],
 				diff: coordDiff
 			}
 		}

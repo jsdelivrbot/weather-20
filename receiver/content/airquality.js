@@ -143,7 +143,7 @@ export class AirQuality{
 							self.pageUrls.push(`${imgUrl}${dayNum}.gif`)
 					}
 					Logger.log(`안양대 기후융합연구소에서 ${dataName}를 받아오기 시작합니다.`)
-					
+
 					self.update(dataId, dataName, repeatDelay,
 								database, callback, 0, fullData)
 					return
@@ -212,7 +212,6 @@ export class AirQuality{
 								}
 							})
 						}
-
 						return
 					}
 
@@ -239,6 +238,7 @@ export class AirQuality{
 }
 
 let listPath = `http://kaq.or.kr/result/result_01.asp`
+//let listPath = `https://www.naver.com`
 
 export function File(app, database) {
 	return new AirQuality(app, database, {

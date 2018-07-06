@@ -1,6 +1,7 @@
 import moment from 'moment'
 import {EncodeMGRS, DecodeMGRS} from '../../math/mgrs.js'
 import {LightCalculate} from '../../math/light.js'
+import {updateCalendar} from '../life/calendar.js'
 
 let utc = '+09:00'
 let localInputFormat = 'YYYY/MM/DD HH:mm:ss'
@@ -92,9 +93,24 @@ export function timeNewestInputParse (){
 }
 
 export function getLightData(paramTime){
+	/*
 	let paramDegree = parseCoordLatLngInput()
 	if(paramTime === undefined) paramTime = timeNewestInputParse()
 	let lightData = LightCalculate(paramTime, paramDegree[0], paramDegree[1], utc, localFormat, localSimpleFormat)
+	return lightData
+	*/
+	let lat = 36
+	let long = 127
+	if(paramTime === undefined) paramTime = new Date()
+	if(window.armyWeather.private.address.main !== null && window.armyWeather.private.address.main !== undefined){
+		lat = window.armyWeather.private.address.main.lat
+		long = window.armyWeather.private.address.main.long
+	}else if(window.armyWeather.private.address.gps !== null && window.armyWeather.private.address.gps !== undefined){
+		lat = window.armyWeather.private.address.gps.lat
+		long = window.armyWeather.private.address.gps.long
+	}
+
+	let lightData = LightCalculate(paramTime, lat, long, utc, localFormat, localSimpleFormat)
 	return lightData
 }
 
@@ -170,6 +186,15 @@ export function CoordInit (){
 		// 얻어온 시간과 좌표로
 		// 미리 데이터를 계산해서 출력합니다.
 		applyProcess()
+		
+		let index = null
+		setInterval(()=>{
+			if(index != window.armyWeather.private.address.index){
+				applyProcess()
+				updateCalendar()
+				index = window.armyWeather.private.address.index
+			}
+		}, 500) // 0.5초마다 자동 갱신하게 설정
 	})
 
 	// 버튼과 처리함수를 연동시킵니다.

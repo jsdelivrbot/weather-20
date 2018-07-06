@@ -8,6 +8,67 @@ import iconv from 'iconv-lite'
 let utc = `+09:00`
 let serviceKey = `ZyS8WG8B9gda%2Bb3A4S2rjydFD2SOjrXYAjJpzVoO2Kx4WEiAngX6sFixyUW9g1KbIskw%2FiwW5K%2FJ%2Bzbl7XRQjg%3D%3D`
 
+let localRssCodeData = {
+	'서울·경기도': [37.563370, 126.993000, 109],
+	'강원도': [37.500000, 128.250000, 105],
+	'충청북도': [36.750000, 127.750000, 131],
+	'충청남도': [36.500000, 126.750000, 133],
+	'전라북도': [35.817000, 127.150000, 146],
+	'전라남도': [34.750000, 127.000000, 156],
+	'경상북도': [36.250000, 128.750000, 143],
+	'경상남도': [35.250000, 128.250000, 159],
+	'제주특별자치도': [33.474980, 126.530700, 184]
+}
+
+let koreaMapAddress = {
+	인천: [37.45323333333334, 126.70735277777779],
+	서울: [37.56356944444444, 126.98000833333333],
+	춘천: [37.858791, 127.73571],
+	수원: [37.263435, 127.02858],
+	원주: [37.344742, 127.948631],
+	강릉: [37.751885, 128.876066],
+	세종: [36.4800121, 127.2890691],
+	대전: [36.347119444444445, 127.38656666666667],
+	충주: [36.972390, 127.934500],
+	울릉: [37.502335, 130.860840],
+	독도: [37.502335, 130.860840],
+	목포: [34.796856, 126.394417],
+	전주: [35.824213, 127.147998],
+	대구: [35.868541666666665, 128.60355277777776],
+	제주: [33.512161, 126.525734],
+	광주: [35.156974999999996, 126.85336388888888],
+	여수: [34.734928, 127.743767],
+	부산: [35.17701944444444, 129.07695277777776],
+	울산: [35.538270, 129.313300]
+}
+
+export function findLocalRssCode(paramLat, paramLong){
+	let lat = Number(paramLat)
+	let long = Number(paramLong)
+
+	let foundData = null
+
+	for(let rootAddressName in localRssCodeData){
+		let rootAddress = localRssCodeData[rootAddressName]
+
+		let coordDiff = 0
+		coordDiff += Math.abs(lat - rootAddress[0])
+		coordDiff += Math.abs(long - rootAddress[1])
+
+		if(foundData === null || foundData.diff > coordDiff){
+			foundData = {
+				name: rootAddressName,
+				code: rootAddress[2],
+				x: rootAddress[0],
+				y: rootAddress[1],
+				diff: coordDiff
+			}
+		}
+	}
+	return [foundData.name, foundData.code]
+}
+
+//http://www.weather.go.kr/weather/lifenindustry/sevice_rss.jsp
 function textClear(str){
 	let cleared = str.split(`\n`).join('').split(`\t`).join('').split('  ').join('')
 	if(cleared[0] == ' ') cleared.slice(1)
@@ -53,141 +114,147 @@ export function RequestMonthlyWeatherData(database, callback){
 						parseString(body, (err, result) => {
 							Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아왔습니다.`)
 
-							// 순서를 재구성합니다.
-							let monthlyForeCast = {
-								title: textClear(result.rss.channel[0].item[0].title[0]), // "1개월전망 전국 - 2018년 6월 14일 11시  발표"
-								category: result.rss.channel[0].item[0].category[0], // "육상 장기예보 1개월 전망"
+							try{
+								// 순서를 재구성합니다.
+								let monthlyForeCast = {
+									title: textClear(result.rss.channel[0].item[0].title[0]), // "1개월전망 전국 - 2018년 6월 14일 11시  발표"
+									category: result.rss.channel[0].item[0].category[0], // "육상 장기예보 1개월 전망"
 
-								targetDate: result.rss.channel[0].item[0].description[0].header[0].date[0], // "2018년 6월 25일 ~ 7월 22일"
-								currentDate: result.rss.channel[0].item[0].description[0].header[0].ydate[0], // "2018년 6월 14일 11시"
-								nextDate: result.rss.channel[0].item[0].description[0].header[0].next_ydate[0], // "2018년 6월 21일 11시"
+									targetDate: result.rss.channel[0].item[0].description[0].header[0].date[0], // "2018년 6월 25일 ~ 7월 22일"
+									currentDate: result.rss.channel[0].item[0].description[0].header[0].ydate[0], // "2018년 6월 14일 11시"
+									nextDate: result.rss.channel[0].item[0].description[0].header[0].next_ydate[0], // "2018년 6월 21일 11시"
 
-								summary: textClear(result.rss.channel[0].item[0].description[0].body[0].summary[0]), 
-								// <![CDATA[ ○ 기온 전망 : 대체로 평년과 비슷하거나 높겠습니다.○ 강수량 전망 : 대체로 평년과 비슷하겠습니다. ]]>
+									summary: textClear(result.rss.channel[0].item[0].description[0].body[0].summary[0]), 
+									// <![CDATA[ ○ 기온 전망 : 대체로 평년과 비슷하거나 높겠습니다.○ 강수량 전망 : 대체로 평년과 비슷하겠습니다. ]]>
 
-								review: [], // 전국의 4주치 리뷰
-								temp: {}, // 각 지역별 4주치 기온전망
-								rain: {}, // 각 지역별 4주치 강수전망
-							}
-
-							// 전국의 4주치 리뷰 해석
-							for(let weekIndex in result.rss.channel[0].item[0].description[0].body[0].weather_forecast[0].week){
-								let week = result.rss.channel[0].item[0].description[0].body[0].weather_forecast[0].week[weekIndex]
-								monthlyForeCast.review.push({
-									period: week[`week${Number(weekIndex)+1}_period`][0],
-									review: textClear(week[`week${Number(weekIndex)+1}_weather_review`][0])
-								})
-							}
-
-							// ta 지역별 4주 기온 전망태그
-							// 각 지역별 4주치 기온전망데이터 해석
-							for(let localData of result.rss.channel[0].item[0].description[0].body[0].onemonth_ta_forecast[0].local_ta){
-
-								let localPreName = localData.local_ta_name[0]
-								let localName = [] //해석된 실제 지역명
-
-								if(localPreName.indexOf('전국') != -1){
-									localName.push('전국')
-								}else if(localPreName.indexOf('서울ㆍ인천ㆍ경기도') != -1){
-									localName.push('서울')
-									localName.push('인천')
-									localName.push('경기남부')
-									localName.push('경기북부')
-								}else if(localPreName.indexOf('대전ㆍ세종ㆍ충청남도') != -1){
-									localName.push('대전')
-									localName.push('세종')
-									localName.push('충남')
-								}else if(localPreName.indexOf('충청북도 ') != -1){
-									localName.push('충북')
-								}else if(localPreName.indexOf('광주ㆍ전라남도') != -1){
-									localName.push('광주')
-									localName.push('전남')
-								}else if(localPreName.indexOf('전라북도') != -1){
-									localName.push('전북')
-								}else if(localPreName.indexOf('부산ㆍ울산ㆍ경상남도') != -1){
-									localName.push('부산')
-									localName.push('울산')
-									localName.push('경남')
-								}else if(localPreName.indexOf('대구ㆍ경상북도') != -1){
-									localName.push('대구')
-									localName.push('경북')
-								}else if(localPreName.indexOf('제주도') != -1){
-									localName.push('제주')
+									review: [], // 전국의 4주치 리뷰
+									temp: {}, // 각 지역별 4주치 기온전망
+									rain: {}, // 각 지역별 4주치 강수전망
 								}
-								
-								for(let localNameWork of localName){
-									monthlyForeCast.temp[localNameWork] = []
 
-									for(let localWeekDataIndex in localData.week_local_ta){
-										let localWeekData = localData.week_local_ta[localWeekDataIndex]
-										monthlyForeCast.temp[localNameWork].push({
-											normalYear: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_normalYear`][0],
-											similarRange: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_similarRange`][0],
-											minVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_minVal`][0],
-											similarVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_similarVal`][0],
-											maxVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_maxVal`][0]
-										})
+								// 전국의 4주치 리뷰 해석
+								for(let weekIndex in result.rss.channel[0].item[0].description[0].body[0].weather_forecast[0].week){
+									let week = result.rss.channel[0].item[0].description[0].body[0].weather_forecast[0].week[weekIndex]
+									monthlyForeCast.review.push({
+										period: week[`week${Number(weekIndex)+1}_period`][0],
+										review: textClear(week[`week${Number(weekIndex)+1}_weather_review`][0])
+									})
+								}
+
+								// ta 지역별 4주 기온 전망태그
+								// 각 지역별 4주치 기온전망데이터 해석
+								for(let localData of result.rss.channel[0].item[0].description[0].body[0].onemonth_ta_forecast[0].local_ta){
+
+									let localPreName = localData.local_ta_name[0]
+									let localName = [] //해석된 실제 지역명
+
+									if(localPreName.indexOf('전국') != -1){
+										localName.push('전국')
+									}else if(localPreName.indexOf('서울ㆍ인천ㆍ경기도') != -1){
+										localName.push('서울')
+										localName.push('인천')
+										localName.push('경기남부')
+										localName.push('경기북부')
+									}else if(localPreName.indexOf('대전ㆍ세종ㆍ충청남도') != -1){
+										localName.push('대전')
+										localName.push('세종')
+										localName.push('충남')
+									}else if(localPreName.indexOf('충청북도 ') != -1){
+										localName.push('충북')
+									}else if(localPreName.indexOf('광주ㆍ전라남도') != -1){
+										localName.push('광주')
+										localName.push('전남')
+									}else if(localPreName.indexOf('전라북도') != -1){
+										localName.push('전북')
+									}else if(localPreName.indexOf('부산ㆍ울산ㆍ경상남도') != -1){
+										localName.push('부산')
+										localName.push('울산')
+										localName.push('경남')
+									}else if(localPreName.indexOf('대구ㆍ경상북도') != -1){
+										localName.push('대구')
+										localName.push('경북')
+									}else if(localPreName.indexOf('제주도') != -1){
+										localName.push('제주')
+									}
+
+									for(let localNameWork of localName){
+										monthlyForeCast.temp[localNameWork] = []
+
+										for(let localWeekDataIndex in localData.week_local_ta){
+											let localWeekData = localData.week_local_ta[localWeekDataIndex]
+											monthlyForeCast.temp[localNameWork].push({
+												normalYear: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_normalYear`][0],
+												similarRange: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_similarRange`][0],
+												minVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_minVal`][0],
+												similarVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_similarVal`][0],
+												maxVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_ta_maxVal`][0]
+											})
+										}
 									}
 								}
-							}
 
-							// rn 지역별 4주 강수 전망태그
-							// 각 지역별 4주치 강수전망데이터 해석
-							for(let localData of result.rss.channel[0].item[0].description[0].body[0].onemonth_rn_forecast[0].local_rn){
+								// rn 지역별 4주 강수 전망태그
+								// 각 지역별 4주치 강수전망데이터 해석
+								for(let localData of result.rss.channel[0].item[0].description[0].body[0].onemonth_rn_forecast[0].local_rn){
 
-								let localPreName = localData.local_rn_name[0]
-								let localName = [] //해석된 실제 지역명
+									let localPreName = localData.local_rn_name[0]
+									let localName = [] //해석된 실제 지역명
 
-								if(localPreName.indexOf('전국') != -1){
-									localName.push('전국')
-								}else if(localPreName.indexOf('서울ㆍ인천ㆍ경기도') != -1){
-									localName.push('서울')
-									localName.push('인천')
-									localName.push('경기남부')
-									localName.push('경기북부')
-								}else if(localPreName.indexOf('대전ㆍ세종ㆍ충청남도') != -1){
-									localName.push('대전')
-									localName.push('세종')
-									localName.push('충남')
-								}else if(localPreName.indexOf('충청북도 ') != -1){
-									localName.push('충북')
-								}else if(localPreName.indexOf('광주ㆍ전라남도') != -1){
-									localName.push('광주')
-									localName.push('전남')
-								}else if(localPreName.indexOf('전라북도') != -1){
-									localName.push('전북')
-								}else if(localPreName.indexOf('부산ㆍ울산ㆍ경상남도') != -1){
-									localName.push('부산')
-									localName.push('울산')
-									localName.push('경남')
-								}else if(localPreName.indexOf('대구ㆍ경상북도') != -1){
-									localName.push('대구')
-									localName.push('경북')
-								}else if(localPreName.indexOf('제주도') != -1){
-									localName.push('제주')
-								}
+									if(localPreName.indexOf('전국') != -1){
+										localName.push('전국')
+									}else if(localPreName.indexOf('서울ㆍ인천ㆍ경기도') != -1){
+										localName.push('서울')
+										localName.push('인천')
+										localName.push('경기남부')
+										localName.push('경기북부')
+									}else if(localPreName.indexOf('대전ㆍ세종ㆍ충청남도') != -1){
+										localName.push('대전')
+										localName.push('세종')
+										localName.push('충남')
+									}else if(localPreName.indexOf('충청북도 ') != -1){
+										localName.push('충북')
+									}else if(localPreName.indexOf('광주ㆍ전라남도') != -1){
+										localName.push('광주')
+										localName.push('전남')
+									}else if(localPreName.indexOf('전라북도') != -1){
+										localName.push('전북')
+									}else if(localPreName.indexOf('부산ㆍ울산ㆍ경상남도') != -1){
+										localName.push('부산')
+										localName.push('울산')
+										localName.push('경남')
+									}else if(localPreName.indexOf('대구ㆍ경상북도') != -1){
+										localName.push('대구')
+										localName.push('경북')
+									}else if(localPreName.indexOf('제주도') != -1){
+										localName.push('제주')
+									}
 
-								for(let localNameWork of localName){
-									monthlyForeCast.rain[localNameWork] = []
+									for(let localNameWork of localName){
+										monthlyForeCast.rain[localNameWork] = []
 
-									for(let localWeekDataIndex in localData.week_local_rn){
-										let localWeekData = localData.week_local_rn[localWeekDataIndex]
-										monthlyForeCast.rain[localNameWork].push({
-											normalYear: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_normalYear`][0],
-											similarRange: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_similarRange`][0],
-											minVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_minVal`][0],
-											similarVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_similarVal`][0],
-											maxVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_maxVal`][0]
-										})
+										for(let localWeekDataIndex in localData.week_local_rn){
+											let localWeekData = localData.week_local_rn[localWeekDataIndex]
+											monthlyForeCast.rain[localNameWork].push({
+												normalYear: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_normalYear`][0],
+												similarRange: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_similarRange`][0],
+												minVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_minVal`][0],
+												similarVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_similarVal`][0],
+												maxVal: localWeekData[`week${Number(localWeekDataIndex)+1}_local_rn_maxVal`][0]
+											})
+										}
 									}
 								}
-							}
 
-							let monthlyDataSchema = {
-								timestamp: (new Date()).getTime(),
-								forecast: monthlyForeCast
+								let monthlyDataSchema = {
+									timestamp: (new Date()).getTime(),
+									forecast: monthlyForeCast
+								}
+								database.metadata.set(`weather.global`, monthlyDataSchema)
+							}catch(e){
+								Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아오는데 실패했습니다`)
+								console.log(body)
+								console.log(e)
 							}
-							database.metadata.set(`weather.global`, monthlyDataSchema)
 						})
 					})
 				})
@@ -200,8 +267,9 @@ export function RequestMonthlyWeatherData(database, callback){
 	})
 }
 
-export function RequestWeeklyWeatherData(database, callback){
-	database.metadata.get(`weather.weekly`, (isSuccess, data)=>{
+export function RequestWeeklyWeatherData(database, callback, paramX, paramY){
+	let localRssCode = findLocalRssCode(paramX, paramY)
+	database.metadata.get(`weather.weekly.${localRssCode[1]}`, (isSuccess, data)=>{
 
 		// 기존 데이터가 없는 경우 또는
 		// 데이터 다운로드 시점으로부터 1시간이 지난 경우
@@ -211,60 +279,79 @@ export function RequestWeeklyWeatherData(database, callback){
 		   && moment(Number(data['timestamp'])).add(1, 'hours') <= moment()) ){
 
 			try{
-				// 최신 기상데이터 파일의 이름을 얻어옵니다.
+				// 지역 기상데이터를 얻어옵니다.
 				request({
-						uri: `https://www.weather.go.kr/weather/lifenindustry/sevice_rss.jsp`,
+						uri: `http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=${localRssCode[1]}`,
 						rejectUnauthorized: false,
 						encoding: null
 
 					}, (error, response, body) => {
 
 					if(body === undefined){
-						console.log('신규 포멧 형태 받음')
+						console.log('receiver/content/weather.js/RequestWeeklyWeatherData 에서 신규 포멧 형태 받음')
+
+						// null 값을 콜백에 전달합니다.
+						if(typeof callback === 'function')
+							callback(null)
 						return
 					}
 
 					body = String(body)
 
-					let weeklyWeatherDataName = body.split(`http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?`)[1].split(`" id="dfs_rss1"`)[0]
-					request({
-							uri: `http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?${weeklyWeatherDataName}`,
-							encoding: null
-					}, (error, response, body) => {
+					// 지역 기상데이터 파싱
+					parseString(body, (err, result) => {
 
-						// 데이터 인코딩 파싱
-						//body = iconv.decode(body, 'EUC-KR').toString()
+						let localDescription = result.rss.channel[0].item[0].description[0].header[0].wf[0]
+						// 전국 기상데이터를 얻어옵니다.
+						request({
+								uri: `http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=108`,
+								encoding: null
+						}, (error, response, body) => {
 
-						parseString(body, (err, result) => {
-							Logger.log(`기상청에서 주간 전국 기상예보 데이터를 받아왔습니다.`)
+							// 데이터 인코딩 파싱
+							//body = iconv.decode(body, 'EUC-KR').toString()
 
-							// 순서를 재구성합니다.
-							let weeklyForeCast = {
-								title: textClear(result.rss.channel[0].item[0].title[0]), // "전국 육상 중기예보 - 2018년 06월 21일 (목)요일 06:00 발표"
-								category: result.rss.channel[0].item[0].category[0], // "육상중기예보"
+							parseString(body, (err, result) => {
+								Logger.log(`기상청에서 주간 ${localRssCode[0]}(+전국) 기상예보 데이터를 받아왔습니다.`)
 
-								broadcast: result.rss.channel[0].item[0].description[0].header[0].tm[0], // "201806210600"
-								description: result.rss.channel[0].item[0].description[0].header[0].wf[0], // "장마전선의 영향으로 25일 제주도에서 비가 시작되어.."
+								// 순서를 재구성합니다.
+								let weeklyForeCast = {
+									title: textClear(result.rss.channel[0].item[0].title[0]), // "전국 육상 중기예보 - 2018년 06월 21일 (목)요일 06:00 발표"
+									category: result.rss.channel[0].item[0].category[0], // "육상중기예보"
 
-								location: {}, // 전국의 10일치 데이터
-							}
+									broadcast: result.rss.channel[0].item[0].description[0].header[0].tm[0], // "201806210600"
+									description: result.rss.channel[0].item[0].description[0].header[0].wf[0], // "장마전선의 영향으로 25일 제주도에서 비가 시작되어.."
 
-							// 전국의 10일치 주간 데이터 수집
-							for(let weekIndex in result.rss.channel[0].item[0].description[0].body[0].location){
-								let week = result.rss.channel[0].item[0].description[0].body[0].location[weekIndex]
-								let locationName = week.city[0]
-								weeklyForeCast.location[locationName] = week.data
-							}
+									location: {}, // 전국의 10일치 데이터
 
-							let weeklyDataSchema = {
-								timestamp: (new Date()).getTime(),
-								forecast: weeklyForeCast
-							}
-							database.metadata.set(`weather.weekly`, weeklyDataSchema)
+									local:{ // 국부 데이터
+										name: localRssCode[0],
+										description: localDescription
+									}
+								}
+
+								// 전국의 10일치 주간 데이터 수집
+								for(let weekIndex in result.rss.channel[0].item[0].description[0].body[0].location){
+									let week = result.rss.channel[0].item[0].description[0].body[0].location[weekIndex]
+									let locationName = week.city[0]
+									weeklyForeCast.location[locationName] = week.data
+								}
+
+								let weeklyDataSchema = {
+									timestamp: (new Date()).getTime(),
+									forecast: weeklyForeCast
+								}
+								database.metadata.set(`weather.weekly.${localRssCode[1]}`, weeklyDataSchema)
+
+								// 입력되어 있는 날씨 값을 콜백에 전달합니다.
+								if(typeof callback === 'function')
+									callback(weeklyDataSchema)
+							})
 						})
 					})
 				})
 			}catch(e){}
+			return
 		}
 
 		// 입력되어 있는 날씨 값을 콜백에 전달합니다.
@@ -275,13 +362,16 @@ export function RequestWeeklyWeatherData(database, callback){
 
 export function RequestLiveWeatherData(database, cellNumber, callback){
 	database.metadata.get(`weather.live.${cellNumber}`, (isSuccess, data)=>{
+
 		// 기존 데이터가 없는 경우 또는
 		// 데이터 다운로드 시점으로부터 1시간이 지난 경우
 		try{
-			if(!isSuccess || data === null ||
+			let isNeedToUpdate = !isSuccess || data === null ||
 			  (typeof data === 'object'
 			   && typeof data['timestamp'] !== 'undefined'
-			   && moment(Number(data['timestamp'])).add(1, 'hours') <= moment()) ){
+			   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().get('hour'))
+
+			if(isNeedToUpdate){
 
 				// 여기에 작업 시작
 				// 셀번호 -> 격자X Y 획득
@@ -354,8 +444,12 @@ export function RequestLiveWeatherData(database, cellNumber, callback){
 							data: parsedData
 						}
 						database.metadata.set(`weather.live.${cellNumber}`, liveDataSchema)
+						if(typeof callback === 'function')
+							callback(liveDataSchema)
 					})
 				}, true)
+
+				return
 			}
 		}catch(e){}
 
@@ -370,10 +464,12 @@ export function RequestWeatherData(database, cellNumber, callback, isLazyLoad = 
 
 		// 기존 데이터가 없는 경우 또는
 		// 데이터 다운로드 시점으로부터 1시간이 지난 경우
-		if(!isSuccess || data === null ||
+		let isNeedToUpdate = !isSuccess || data === null ||
 		  (typeof data === 'object'
 		   && typeof data['timestamp'] !== 'undefined'
-		   && moment(Number(data['timestamp'])).add(1, 'hours') <= moment()) ){
+		   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().get('hour'))
+
+		if(isNeedToUpdate){
 
 			try{
 				// 기상청에서 해당 지역 데이터를 받아옵니다.
@@ -441,7 +537,7 @@ export function RequestWeatherData(database, cellNumber, callback, isLazyLoad = 
 		}
 
 		// 입력되어 있는 날씨 값을 콜백에 전달합니다.
-		if(typeof callback === 'function' && !isLazyLoad)
+		if(typeof callback === 'function' && !(isNeedToUpdate && isLazyLoad))
 			callback(data)
 	})
 }
@@ -514,10 +610,12 @@ export default function Weather(app, database) {
 								broadcast: weeklyDataSchema.forecast.broadcast,
 								description: weeklyDataSchema.forecast.description,
 								local: weeklyDataSchema.forecast.location[rootDetailAddress], // x y로 areaDetailName 찾아서 전송
-								location: weeklyDataSchema.forecast.location
+								localData: weeklyDataSchema.forecast.local,
 							})
+							// 전국 데이터긴 한데 3일 뒤 예보 데이터라 일단 배제 (자료량 많기도 함)
+							// location: weeklyDataSchema.forecast.location,
 							response.end()
-						})
+						}, x, y)
 					return
 				}
 			}
@@ -528,7 +626,7 @@ export default function Weather(app, database) {
 			})
 			return
 		}
-		
+
 		// cell 정보가 없으면 null 반환
 		if(typeof requestSchema['cell'] === 'undefined'){
 			response.send(null)
@@ -552,7 +650,7 @@ export default function Weather(app, database) {
 		RequestWeatherData(database, cellNumber, (dailyDataSchema)=>{
 			response.send(dailyDataSchema)
 			response.end()
-		})
+		}, true)
 	})
 
 	// 한달치 데이터를 미리 받아놓습니다.

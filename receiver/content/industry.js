@@ -326,8 +326,8 @@ export function Heatdata(app, database) {
 		// A25 = 비닐하우스
 		// A26 = 취약거주환경
 
-		url: `https://www.weather.go.kr/weather/lifenindustry/li_asset/popup/heatdata_popup.jsp?CODE=A25`,
-		dataJsonUrl: `http://www.weather.go.kr/weather/lifenindustry/heat_jisu_A25.jsp`,
+		url: `https://www.weather.go.kr/weather/lifenindustry/li_asset/popup/heatdata_popup.jsp?CODE=A23`,
+		dataJsonUrl: `http://www.weather.go.kr/weather/lifenindustry/heat_jisu_A23.jsp`,
 		dataJsonName: `map_data_json`,
 		dataId: `heatdata`,
 		dataName: `온도지수`,

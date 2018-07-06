@@ -285,7 +285,8 @@ export function Temp(app, database) {
 		dataType: `T3H`,
 		dataId: `temp`,
 		updateHour: 7,
-		gifDelay: 2000,
+		gifDelay: 5000,
+		repeatDelay: 1000,
 	})
 }
 
@@ -297,6 +298,7 @@ export function TempMax(app, database) {
 		dataId: `tempmax`,
 		updateHour: 7,
 		gifDelay: 1000,
+		repeatDelay: 1000,
 	})
 }
 
@@ -307,7 +309,7 @@ export function RainAmount(app, database) {
 		dataType: `R06`,
 		dataId: `rainamount`,
 		updateHour: 7,
-		gifDelay: 1000,
+		gifDelay: 5000,
 	})
 }
 
@@ -318,7 +320,7 @@ export function Rain(app, database) {
 		dataType: `POP`,
 		dataId: `rain`,
 		updateHour: 7,
-		gifDelay: 1000,
+		gifDelay: 5000,
 		repeatDelay: 1000,
 	})
 }
@@ -330,7 +332,7 @@ export function Sky(app, database) {
 		dataType: `SKY`,
 		dataId: `sky`,
 		updateHour: 7,
-		gifDelay: 1000,
+		gifDelay: 5000,
 		repeatDelay: 1000,
 	})
 }
@@ -342,7 +344,7 @@ export function Wave(app, database) {
 		dataType: `WAV`,
 		dataId: `wave`,
 		updateHour: 7,
-		gifDelay: 2000,
+		gifDelay: 5000,
 		repeatDelay: 1000,
 	})
 }
@@ -354,7 +356,7 @@ export function Humidity(app, database) {
 		dataType: `REH`,
 		dataId: `humidity`,
 		updateHour: 7,
-		gifDelay: 2000,
+		gifDelay: 5000,
 		repeatDelay: 1000,
 	})
 }

@@ -28,7 +28,7 @@ export function MoonCalculate (targetDate, utc){
 			moonPhaseActualPercentage = (moonPhasePercentage+5)/10*100
 		else
 			moonPhaseActualPercentage = (moonPhasePercentage-95)/10*100
-		moonPhaseDescription = '삭'
+		moonPhaseDescription = '무월광'
 	}
 
 	moonPhaseActualPercentage = Number(moonPhaseActualPercentage.toFixed(0))

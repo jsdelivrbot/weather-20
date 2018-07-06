@@ -13,7 +13,7 @@ class Calendar{
 		this.data = {}
 		this.update = updateCallback
 	}
-	
+
 	change(updateCallback){
 		this.update = updateCallback
 	}

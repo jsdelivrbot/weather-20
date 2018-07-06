@@ -23,9 +23,6 @@
 				src="./resources/external/anime.min.js">
 		</script>
 
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.6.0/tiny-slider.css">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.6.0/min/tiny-slider.js"></script>
-
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.3.3/js/swiper.min.js"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.3.3/css/swiper.min.css">
 
@@ -45,12 +42,40 @@
 				src="./resources/external/map.js">
 		</script>
 
+		<script language="javascript"
+				type="text/javascript"
+				src="./resources/external/long-press.js">
+		</script>
+
 		<!-- 반드시 앱 css가 마지막에 위치해야합니다.  -->
 		<link href='/resources/style/style.css'
 			  rel='stylesheet' />
 	</head>
 	<body>
 		<div id=app>
+			<!-- 최초 표시할 이미지  -->
+			<div id="splash" style="display: block;background: url(&quot;resources/images/splash.png&quot;) center center / auto 100% no-repeat;">
+				<div style="
+					position:  relative;
+					left: 10px;
+				">
+					<img src="resources/images/1gigap4.png" width="50px" height="50px" style="
+						position:  absolute;
+						width:  64px;
+						height: 54px;
+						top: 17px;
+						left: 7px;
+						-webkit-animation: spinoff 1.8s infinite linear;
+					">
+					<a id="menu-logo-info" style="
+						position:  absolute;
+						top: 21px;
+						left: 64px;
+					"><br>ARMY<br>WEATHER</a>
+				</div>
+			</div>
+			<div id="splash-back" style="position: relative;width: 100%;height: 100%;background-color: rgb(38, 59, 86);z-index: 2;display: block;"></div>
+
 			<!-- 잠시 기다려주세요 스피너  -->
 			<div id=spinner class="unselectable">
 				<div class="spinner"></div>
@@ -70,22 +95,108 @@
 							<br>서비스를 이용하시려면<br>회원가입 또는 접속을 해주세요.
 						</a>
 					</div>
-					<div id='login-question-register-or-unregister' class='animated infinite updown'>
-						<a id=login-question-register-or-unregister-info1>가입하기</a>
+					<div id='login-question-register-or-unregister' class='login-question-register-or-unregister animated infinite updown'>
+						<a id='login-question-register-or-unregister-info1' class=login-question-register-or-unregister-info1>가입하기</a>
 					</div>
-					<div id='login-question-login-or-logout' class='animated infinite updown'>
-						<a id=login-question-login-or-logout-info1>접속하기</a>
+					<div id='login-question-login-or-logout' class='login-question-login-or-logout animated infinite updown'>
+						<a id='login-question-login-or-logout-info1' class=login-question-login-or-logout-info1>접속하기</a>
 					</div>
 					<div id=login-question-id class='login-question-info'>아이디</div>
 					<input id=login-question-id-input  class='login-question-input'></input>
 					<div id=login-question-pw class='login-question-info'>암호</div>
 					<input id=login-question-pw-input type="password" class='login-question-input'></input>
-					<br><a id="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
+					<br><a id="login-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
 					<div id=login-question-close class='question-close'>
 						<a class="question-close-info">X</a>
 					</div>
 				</div>
 
+				<!-- 가입시 추가정보 입력요청 팝업  -->
+				<div id=register-question class="unselectable">
+					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+					<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
+					<div id="login-question-info1">
+						<a id="login-question-info2">"ARMY-WEATHER"</a>
+						<a id="login-question-info3">
+							<br>회원가입을 요청하시려면<br>추가정보를 입력 해주세요.
+						</a>
+					</div>
+					<div id="register-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 443px;border-color: rgba(23, 23, 23, 0.43);">
+						<a id="register-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: rgba(23, 23, 23, 0.43);">신청하기</a>
+					</div>
+					<div id="register-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 443px;border-color: rgba(23, 23, 23, 0.43);">
+						<a id="register-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: rgba(23, 23, 23, 0.43);">취소하기</a>
+					</div>
+
+					<div id="register-question-area" class="login-question-info" style="left: -7px;">관리지역</div>
+					<div id="register-question-area-input" class="login-question-input" style="
+						width: 175px;
+						font-size: 12px;
+						left: 77px;
+						top: -28px;
+					">터치시 권한 요청할 지역선택 가능</div>
+					<div id=register-question-name class='login-question-info'>이름</div>
+					<input id=register-question-name-input  class='login-question-input'></input>
+					<div id=register-question-addr class='login-question-info'>근무지</div>
+					<input id="register-question-addr-input" class="login-question-input" placeholder="부대/직장명을 입력해주세요." style="
+						font-size: 14px;
+						margin-top: 2px;
+					">
+					<div id=register-question-phone class='login-question-info'>연락처</div>
+					<input id=register-question-phone-input class='login-question-input'></input>
+					<br><a id="register-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
+					<div id=register-question-close class='question-close'>
+						<a class="question-close-info">X</a>
+					</div>
+				</div>
+
+				<!-- 가입시 추가정보 입력요청 팝업  -->
+				<div id="heat-question" class="unselectable" style="display: block; background: rgb(81, 92, 99);">
+					<img class="pannel-ribbon" src="/resources/icons/ribbon.png">
+					<br>
+					<div id="login-question-info1">
+						<a id="login-question-info2">"ARMY-WEATHER"</a>
+						<a id="login-question-info3">
+							<br>온도지수 자동계산기<br></a>
+					</div>
+					<div id="heat-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 468px;border-color: rgba(23, 23, 23, 0.43);background: #f5cf95;">
+						<a id="heat-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: rgb(90, 90, 90);">계산하기</a>
+					</div>
+					<div id="heat-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 467px;border-color: rgba(23, 23, 23, 0.43);background: #f5cf95;">
+						<a id="heat-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: rgb(90, 90, 90);">전파하기</a>
+					</div>
+
+					<div id="heat-question-phone" class="login-question-info" style="left: 6px;top: -7px;">건구온도</div>
+					<input id="heat-question-phone-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;left: -99px;top: 4px;">
+					<div id="heat-question-name" class="login-question-info" style="left: 107px;top: -68px;">습구온도</div>
+					<input id="heat-question-name-input" value="0" type="number" class="login-question-input" style="text-align: center;font-size: 18px;margin-top: 2px;width: 76px;left: 0px;top: -59px;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);">
+					<div id="heat-question-addr" class="login-question-info" style="left: 204px;top: -131px;">흑구온도</div>
+					<input id="heat-question-addr-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;top: -120px;left: 99px;">
+					<div id="heat-question-temp" class="login-question-info" style="left: 70px;top: -95px;font-size: 20px;width: 167px;color: #fbf621;">계산된 온도지수</div>
+					<input id="heat-question-temp-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgb(2, 26, 150);top: -87px;text-align:  center;width: 102px;left: 0px;">
+
+					<div class="login-question-info" style="left: 4px;top: -5px;">기온</div>
+					<input id="heat-question-rtemp1-input" value="0" type="number" class="login-question-input" style="text-align: center;width: 76px; left: -100px; top: 3px; color: rgba(23, 23, 23, 0.43);">
+					<div class="login-question-info" style="left: 102px;top: -66px;">바람</div>
+					<input id="heat-question-rtemp2-input" value="0" type="number" class="login-question-input" style="text-align: center;top: -58px; width: 76px; left: -2px; color: rgba(23, 23, 23, 0.43);">
+					<div class="login-question-info" style="left: 203px;top: -128px;color: #fbf621;">체감온도</div>
+					<input id="heat-question-rtemp3-input" value="0" type="number" class="login-question-input" style="text-align: center;width: 76px;left: 100px;top: -120px;color: rgb(2, 26, 150);text-align:  center;">
+
+					<br>
+					<div id="heat-question-close" class="question-close">
+						<a class="question-close-info">X</a>
+					</div>
+				<a id="login-question-info3" style="
+    top: -244px;
+">
+					<br>체감온도 자동계산기<br></a>
+					<div class="login-question-info" style="width: 10px;left: 70px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
+					<div class="login-question-info" style="width: 10px;left: 170px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
+					<div class="login-question-info" style="width: 10px;left: 268px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
+					<div class="login-question-info" style="width: 10px;left: 70px;top: 420px;color: #ff9811;position:  absolute;">℃</div>
+					<div class="login-question-info" style="width: 10px;left: 166px;top: 418px;color: #ff9811;position:  absolute;">㎧</div>
+					<div class="login-question-info" style="width: 10px;left: 268px;top: 420px;color: #ff9811;position:  absolute;">℃</div>
+				</div>
 
 				<!-- 로그인창 팝업  -->
 				<div id=address-question class="unselectable">
@@ -93,21 +204,27 @@
 					<div id=address-question-close class='question-close'>
 						<a class="question-close-info">X</a>
 					</div><br><br>
-					<a class="address-context">확인하려는 주소를 선택해주세요.</a>
+					<div id="address-type-bar">
+						<div id="address-select-input" class="address-type-item">직접입력</div>
+						<div id="address-select-list" class="address-type-item">목록검색</div>
+					</div>
+					<input id="address-input" class='address-input' value="" placeholder="찾으려는 주소를 여기 입력합니다"></input>
 					<div id=address-box>
-						<div id=address-slider>	
+						<div id=address-slider class=popup-address-slider>
+							<!-- 주소선택 공간  -->
 						</div>
 					</div>
+					<div id='address-item-remove'><a>설정한 주소 삭제하기</a></div>
 				</div>
 
 			</div>
 
-				<!-- 메뉴바 공간  -->
+			<!-- 메뉴바 공간  -->
 			<div id=menu class="unselectable">
 
 				<!-- 메뉴 로고  -->
 				<div id=menu-logo class="animated infinite smallwave">
-					<img src="resources/icons/main.png" width="50px" height="50px"></img>
+					<img id=menu-logo-img src="resources/images/1gigap4.png" width="50px" height="50px"></img>
 					<a id=menu-logo-info><br>ARMY<br>WEATHER</a>
 				</div>
 
@@ -121,15 +238,37 @@
 				<!-- 메뉴 - 지수작성 버튼  -->
 				<div id=account-logo class="animated infinite smallwave unselectable">
 					<img id=menu-account-icon src="resources/icons/menu.png" width="30px" height="30px"></img>
-					<a id=menu-account-info>온도지수보고</a>
+					<a id=menu-account-info>온도지수전파</a>
+				</div>
+
+				<!-- 위치 주소 선택 버튼  -->
+				<div id=day-weather-location>
+					<div id=local-address-slider class="swiper-container local-address-slider">
+						<!-- 위치 주소 슬라이더  -->
+					</div>
+				</div>
+
+				<!-- 최신날씨 갱신 버튼  -->
+				<div id=read-guide>
+					<a id=read-guide-info1>최신날씨</a>
+					<img id=read-guide-info2 src="resources/icons/refresh.png"></img>
 				</div>
 			</div>
+
+			<!-- 자막 공간  -->
+			<div id=subtitle>
+				<div class=subtitle-pannel>
+					<div id=subtitle-address-box class="swiper-container subtitle-address-slider">
+						<!-- 위치 주소 슬라이더  -->
+					</div>
+				</div>
+			</div>
+
 			<div id=container>
 				<div id=life>
 					<div name=content class="unselectable">
 						<div id=life-box>
 							<div id=day-weather-moon>
-
 								<div id="day-weather-moon-outline"></div>
 								<div class=day-weather-template-5>
 									<img src="resources/icons/sunset.png"></img><br>
@@ -148,7 +287,7 @@
 								</div>
 
 								<div class=day-weather-template-5>
-									<img src="resources/icons/moon.png"></img><br>
+									<img src="resources/icons/moonset.png"></img><br>
 									<a id=day-weather-moon-rise-info1 class=day-weather-temp-info>월출: </a>
 									<a id=day-weather-moon-rise-info2 class=day-weather-temp>계산중..</a><br>
 									<a id=day-weather-moon-set-info6 class=day-weather-temp-info>월몰: </a>
@@ -156,11 +295,20 @@
 								</div>
 
 								<div class=day-weather-template-5>
-									<img src="resources/icons/sunrise.png"></img><br>
+									<img src="resources/icons/moon.png"></img><br>
 									<a id=day-weather-moon-set-info1 class=day-weather-temp-info>월광: </a>
 									<a id=day-weather-moon-set-info2 class=day-weather-temp>계산중..</a><br>
 									<a id=day-weather-moon-set-info3 class=day-weather-temp-info>무월광: </a>
 									<a id=day-weather-moon-set-info4 class=day-weather-temp>계산중..</a>
+									<a id="day-weather-moon-set-info5" class="day-weather-temp" style="
+										position:  absolute;
+										top: 21px;
+										width: 85px;
+										left: 147px;
+										text-align: left;
+										font-size: 13px;
+										color: #e4c05c;
+									">(초승달)</a>
 								</div>
 
 								<div id=calendar-info-slider-box class="calendar-info-slider swiper-container">
@@ -169,101 +317,106 @@
 
 										<div class="swiper-slide">
 											<div class="animated infinite updown unselectable">
-												<div class="month"> 
-													<ul style="top: 10px;position:  relative;">
-														<li id="main-month-prev" class="prev">❮</li>
-														<li id="main-month-next" class="next">❯</li>
-														<li><a id="main-current-month">-</a><br>
-															<span style="font-size:18px"><a id="main-current-year">-</a></span>
-														</li>
-													</ul>
+												<div class="weekdays-outline">
+													<div class="month"> 
+														<ul style="top: 10px;position:  relative;">
+															<li id="main-month-prev" class="prev">❮</li>
+															<li id="main-month-next" class="next">❯</li>
+															<li><a id="main-current-month">-</a><br>
+																<span style="font-size:18px; color: #e78d18;"><a id="main-current-year">-</a></span>
+															</li>
+														</ul>
+													</div>
+													<div class="weekdays">
+														 <div style="color: tomato;">일</div>
+														 <div>월</div>
+														 <div>화</div>
+														 <div>수</div>
+														 <div>목</div>
+														 <div>금</div>
+														 <div style="color: #15dbfd;">토</div>
+													</div>
+													<ul id=main-plan-calendar class="days"></ul>
 												</div>
-												<div class="weekdays-outline"></div>
-												<div class="weekdays">
-													 <div style="color: tomato;">일</div>
-													 <div>월</div>
-													 <div>화</div>
-													 <div>수</div>
-													 <div>목</div>
-													 <div>금</div>
-													 <div style="color: #15dbfd;">토</div>
-												</div>
-												<ul id=main-plan-calendar class="days"></ul>
+												
 											</div>
 										</div>
 
 										<div class="swiper-slide">
 											<div class="animated infinite updown unselectable">
-												<div class="month"> 
-													<ul style="top: 10px;position:  relative;">
-														<li id="bmnt-month-prev" class="prev">❮</li>
-														<li id="bmnt-month-next" class="next">❯</li>
-														<li><a id="bmnt-current-month">-</a><br>
-															<span style="font-size:18px"><a id="bmnt-current-year">-</a></span>
-														</li>
-													</ul>
+												<div class="weekdays-outline">
+													<div class="month"> 
+														<ul style="top: 10px;position:  relative;">
+															<li id="bmnt-month-prev" class="prev">❮</li>
+															<li id="bmnt-month-next" class="next">❯</li>
+															<li><a id="bmnt-current-month">-</a><br>
+																<span style="font-size:18px; color: #e78d18;"><a id="bmnt-current-year">-</a></span>
+															</li>
+														</ul>
+													</div>
+													<div class="weekdays">
+														 <div style="color: tomato;">일</div>
+														 <div>월</div>
+														 <div>화</div>
+														 <div>수</div>
+														 <div>목</div>
+														 <div>금</div>
+														 <div style="color: #15dbfd;">토</div>
+													</div>
+													<ul id=bmnt-plan-calendar class="days"></ul>
 												</div>
-												<div class="weekdays-outline"></div>
-												<div class="weekdays">
-													 <div style="color: tomato;">일</div>
-													 <div>월</div>
-													 <div>화</div>
-													 <div>수</div>
-													 <div>목</div>
-													 <div>금</div>
-													 <div style="color: #15dbfd;">토</div>
-												</div>
-												<ul id=bmnt-plan-calendar class="days"></ul>
 											</div>
 										</div>
 
 										<div class="swiper-slide">
 											<div class="animated infinite updown unselectable">
-												<div class="month"> 
-													<ul style="top: 10px;position:  relative;">
-														<li id="sun-month-prev" class="prev">❮</li>
-														<li id="sun-month-next" class="next">❯</li>
-														<li><a id="sun-current-month">-</a><br>
-															<span style="font-size:18px"><a id="sun-current-year">-</a></span>
-														</li>
-													</ul>
+												<div class="weekdays-outline">
+													<div class="month"> 
+														<ul style="top: 10px;position:  relative;">
+															<li id="sun-month-prev" class="prev">❮</li>
+															<li id="sun-month-next" class="next">❯</li>
+															<li><a id="sun-current-month">-</a><br>
+																<span style="font-size:18px; color: #e78d18;"><a id="sun-current-year">-</a></span>
+															</li>
+														</ul>
+													</div>
+													<div class="weekdays">
+														 <div style="color: tomato;">일</div>
+														 <div>월</div>
+														 <div>화</div>
+														 <div>수</div>
+														 <div>목</div>
+														 <div>금</div>
+														 <div style="color: #15dbfd;">토</div>
+													</div>
+													<ul id=sun-plan-calendar class="days"></ul>
 												</div>
-												<div class="weekdays-outline"></div>
-												<div class="weekdays">
-													 <div style="color: tomato;">일</div>
-													 <div>월</div>
-													 <div>화</div>
-													 <div>수</div>
-													 <div>목</div>
-													 <div>금</div>
-													 <div style="color: #15dbfd;">토</div>
-												</div>
-												<ul id=sun-plan-calendar class="days"></ul>
 											</div>
 										</div>
 
 										<div class="swiper-slide">
 											<div class="animated infinite updown unselectable">
-												<div class="month"> 
-													<ul style="top: 10px;position:  relative;">
-														<li id="moon-month-prev" class="prev">❮</li>
-														<li id="moon-month-next" class="next">❯</li>
-														<li><a id="moon-current-month">-</a><br>
-															<span style="font-size:18px"><a id="moon-current-year">-</a></span>
-														</li>
-													</ul>
+												<div class="weekdays-outline">
+													<div class="month"> 
+														<ul style="top: 10px;position:  relative;">
+															<li id="moon-month-prev" class="prev">❮</li>
+															<li id="moon-month-next" class="next">❯</li>
+															<li><a id="moon-current-month">-</a><br>
+																<span style="font-size:18px; color: #e78d18;"><a id="moon-current-year">-</a></span>
+															</li>
+														</ul>
+													</div>
+													<div class="weekdays">
+														 <div style="color: tomato;">일</div>
+														 <div>월</div>
+														 <div>화</div>
+														 <div>수</div>
+														 <div>목</div>
+														 <div>금</div>
+														 <div style="color: #15dbfd;">토</div>
+													<ul id=moon-plan-calendar class="days"></ul>
+													</div>
 												</div>
-												<div class="weekdays-outline"></div>
-												<div class="weekdays">
-													 <div style="color: tomato;">일</div>
-													 <div>월</div>
-													 <div>화</div>
-													 <div>수</div>
-													 <div>목</div>
-													 <div>금</div>
-													 <div style="color: #15dbfd;">토</div>
-												</div>
-												<ul id=moon-plan-calendar class="days"></ul>
 											</div>
 										</div>
 
@@ -271,37 +424,39 @@
 									<div class="swiper-pagination"></div>
 								</div>
 
-								<img src="resources/icons/placeholder.png" class=coord-img></img>
-								<div id=coord-mgrs-info class='coord-description'>
-									<br>GPS를 활용한 천문기상 계산하기<br></div>
-								<div id=coord-mgrs-info class='coord-info'>MGRS좌표</div>
-								<input id=coord-mgrs-input  class='coord-input' value="52SCE 31126 99272"></input>
-								<div id=coord-latlng-info class='coord-info'>경위도좌표</div>
-								<input id=coord-latlng-input  class='coord-input' value="36.12345 127.12345"></input>
-								<div id=coord-time-info class='coord-info'>해당시간대</div>
-								<input id=coord-time-input  class='coord-input' value="2018/06/10 10:26:10"></input>
-								<br><br>
+								<div id=coord-mgrs-pannel>
+									<img src="resources/icons/placeholder.png" class=coord-img></img>
+									<div id=coord-mgrs-info class='coord-description'>
+										<br>GPS를 활용한 천문기상 계산하기<br></div>
+									<div id=coord-mgrs-info class='coord-info'>MGRS좌표</div>
+									<input id=coord-mgrs-input  class='coord-input' value="-"></input>
+									<div id=coord-latlng-info class='coord-info'>경위도좌표</div>
+									<input id=coord-latlng-input  class='coord-input' value="-"></input>
+									<div id=coord-time-info class='coord-info'>해당시간대</div>
+									<input id=coord-time-input  class='coord-input' value="-"></input>
+									<br><br>
 
-								<div class='coord-button-box'>
-									<div id=coord-time-newest class='coord-button'>
-										<a class='coord-button-info'>현재시간 얻기</a>
+									<div class='coord-button-box'>
+										<div id=coord-time-newest class='coord-button'>
+											<a class='coord-button-info'>현재시간 얻기</a>
+										</div>
+										<div id=coord-newest class='coord-button'>
+											<a class='coord-button-info'>현재위치 얻기</a>
+										</div>
+										<div id=coord-apply class='coord-button'>
+											<a class='coord-button-info'>입력내용 반영</a>
+										</div>
 									</div>
-									<div id=coord-newest class='coord-button'>
-										<a class='coord-button-info'>현재위치 얻기</a>
-									</div>
-									<div id=coord-apply class='coord-button'>
-										<a class='coord-button-info'>입력내용 반영</a>
-									</div>
-								</div>
-								<div class='coord-button-box'>
-									<div id=coord-mgrs-to-latlng class='coord-button'>
-										<a class='coord-button-info'>MGRS->경위도</a>
-									</div>
-									<div id=coord-latlng-to-mgrs class='coord-button'>
-										<a class='coord-button-info'>경위도->MGRS</a>
-									</div>
-									<div id=coord-auto-newest class='coord-button'>
-										<a class='coord-button-info'>실시간 갱신</a>
+									<div class='coord-button-box'>
+										<div id=coord-mgrs-to-latlng class='coord-button'>
+											<a class='coord-button-info'>MGRS->경위도</a>
+										</div>
+										<div id=coord-latlng-to-mgrs class='coord-button'>
+											<a class='coord-button-info'>경위도->MGRS</a>
+										</div>
+										<div id=coord-auto-newest class='coord-button'>
+											<a class='coord-button-info'>실시간 갱신</a>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -316,10 +471,6 @@
 
 				<div id=weather>
 					<div name=content>
-						<div id=read-guide class="animated infinite updown">
-							<a id=read-guide-info1>새로고침<a>
-							<img id=read-guide-info2 src="resources/icons/refresh.png"></img>
-						</div>
 						<div id=guides>
 							<!-- GUIDE IMAGES -->
 							<img id=guide-image></img>
@@ -333,25 +484,18 @@
 						</div>
 						<div id=today class="unselectable">
 							<div id=day-print class="animated infinite updown">
-								<div id=day-weather-location>
-									<div class="location-small-box">
-										<a class="location-small-box-name">영북면</a>
-										<br/>
-									</div>
-								</div>
-
 								<div id=day-weather-status>
 									<div id="day-weather-outline">
-										<div id=local-info-slider-box class="swiper-container local-info">
+										<div id=local-front-info-slider-box class="swiper-container local-front-info">
 											<!-- 주간정보 슬라이더 -->
 										</div>
 									</div>
-									
+
 									<div id=day-top-weather-box>
 										<img id=day-weather-status-img src="resources/icons/pack-1/21.png" class=day-status-img></img>
-										<a id=day-weather-info1>현재 온도: </a>
+										<a id=day-weather-info1>현재온도: </a>
 										<a id=day-weather-info2 class=day-weather-temp>-</a><br>
-										<a id=day-weather-info4>온도 지수: </a>
+										<a id=day-weather-info4>온도지수: </a>
 										<a id=day-weather-info5 class=day-weather-temp>-</a>
 										<a id=day-weather-info6 class=day-weather-temp-sub>(-시 기준)</a><br>
 										<br><br><br>
@@ -360,9 +504,9 @@
 											<div id=day-weather-temp class=day-weather-template-6>
 												<a id=day-weather-temp-info1 class=day-weather-temp-info>바람: </a>
 												<a id=day-weather-temp-info2 class=day-weather-temp>-</a><br>
-												<a id=day-weather-temp-info3 class=day-weather-temp-info>오존: </a>
+												<a id=day-weather-temp-info3 class=day-weather-temp-info>시정: </a>
 												<a id=day-weather-temp-info4 class=day-weather-temp>-</a>
-												<a id=day-weather-temp-info5 class=day-weather-temp-sub>(좋음)</a><br>
+												<a class=day-weather-temp-sub>(km)</a><br>
 											</div>
 
 											<div id=day-weather-wind class=day-weather-template-6>
@@ -380,6 +524,27 @@
 												<a id=day-weather-rain-info5 class=day-weather-temp-sub>(-)</a><br>
 												<a id=day-weather-rain-info3 class=day-weather-temp-info>누적 강수량: </a>
 												<a id=day-weather-rain-info4 class=day-weather-temp>-</a>
+											</div>
+											
+											<!-- 여기에 아이콘 설명정보 슬라이더 -->
+											<div id=day-weather-description class="swiper-container day-weather-description-slider">
+												<div class=swiper-wrapper>
+													<div class="swiper-slide">
+														<div class="day-weather-context">
+															<a id=day-weather-description1 class=day-weather-temp-info>-</a>
+														</div>
+													</div>
+													<div class="swiper-slide">
+														<div class="day-weather-context">
+															<a id=day-weather-description1 class=day-weather-temp-info>-</a>
+														</div>
+													</div>
+													<div class="swiper-slide">
+														<div class="day-weather-context">
+															<a id=day-weather-description1 class=day-weather-temp-info>-</a>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
 										<br>
@@ -430,7 +595,383 @@
 				
 				<div id=health>
 					<div name=content>
-						<div id=health-pannel class="unselectable"></div>
+						<div id=health-pannel class="unselectable">
+
+							<div id="day-air-outline"></div>
+							<div id=day-air-box>
+								<div class=day-weather-template-6>
+									<a class=day-weather-temp-info>불쾌지수: </a>
+									<a id=day-air-info15 class=day-weather-temp>-</a>
+									<a id=day-air-info16 class=day-weather-temp-sub>(-)</a><br>
+									<a class=day-weather-temp-info>오존: </a>
+									<a id=day-air-info1 class=day-weather-temp>-</a>
+									<a id=day-air-info2 class=day-weather-temp-sub>(-)</a><br>
+								</div>
+
+								<div class=day-weather-template-6>
+									<a class=day-weather-temp-info>자외선지수: </a>
+									<a id=day-air-info5 class=day-weather-temp>-</a>
+									<a id=day-air-info6 class=day-weather-temp-sub>(-)</a><br>
+									<a class=day-weather-temp-info>폐질환지수: </a>
+									<a id=day-air-info12 class=day-weather-temp>(-)</a><br>
+								</div>
+
+								<div class=day-weather-template-6>
+									<a class=day-weather-temp-info>산불지수: </a>
+									<a id=day-air-info13 class=day-weather-temp>-</a>
+									<a id=day-air-info14 class=day-weather-temp-sub>(-)</a><br>
+									<a class=day-weather-temp-info>뇌졸중지수: </a>
+									<a id=day-air-info18 class=day-weather-temp>(-)</a><br>
+								</div>
+								<br>
+							</div>
+
+							<div id="local-air-grade-box-outline">
+								<div id="local-air-grade-grpah">
+									<a>좋음</a>
+								</div>
+								<div style="
+									position:  absolute;
+									top: 13px;
+									left: 45px;
+									font-size: 13px;
+									color: #ffffff;
+								">[ 대기질 수준 ]</div>
+								<div style="
+									position:  absolute;
+									top: 13px;
+									left: 185px;
+									font-size: 13px;
+									color: #ffffff;
+								">[ 기타 대기오염 수준 ]</div>
+								<div style="
+									position:  absolute;
+									top: 89px;
+									left: 163px;
+									font-size: 15px;
+									color: #e78d18;
+								">[매연오염]</div>
+								<div style="
+									position:  absolute;
+									top: 114px;
+									left: 163px;
+									font-size: 15px;
+									color: #e78d18;
+								">[화학오염]</div>
+								<div style="
+									position:  absolute;
+									top: 140px;
+									left: 163px;
+									font-size: 15px;
+									color: #e78d18;
+								">[산업오염]</div>
+								<div style="
+									position:  absolute;
+									top: 91px;
+									left: 237px;
+									font-size: 13px;
+									color: #ffffff;
+								">일산화탄소</div>
+								<div style="
+									position:  absolute;
+									top: 116px;
+									left: 237px;
+									font-size: 13px;
+									color: #ffffff;
+								">이산화질소</div>
+								<div style="
+									position:  absolute;
+									top: 142px;
+									left: 237px;
+									font-size: 13px;
+									color: #ffffff;
+								">아황산가스</div>
+								<div style="
+									position:  absolute;
+									top: 96px;
+									left: 300px;
+									font-size: 10px;
+									color: #ffffff;
+								">CO</div>
+								<div style="
+									position:  absolute;
+									top: 120px;
+									left: 300px;
+									font-size: 10px;
+									color: #ffffff;
+								">NO2 </div>
+								<div style="
+									position:  absolute;
+									top: 144px;
+									left: 300px;
+									font-size: 10px;
+									color: #ffffff;
+								">SO2 </div>
+								<div id="front-co-grade" style="
+									position:  absolute;
+									top: 90px;
+									left: 338px;
+									font-size: 16px;
+									color: #e78d18;
+								">[좋음]</div>
+								<div id="front-no2-grade" style="
+									position:  absolute;
+									top: 115px;
+									left: 338px;
+									font-size: 16px;
+									color: #e78d18;
+								">[좋음]</div>
+								<div id="front-so2-grade" style="
+									position:  absolute;
+									top: 141px;
+									left: 338px;
+									font-size: 16px;
+									color: #e78d18;
+								">[좋음]</div>
+								<div style="
+									position:  absolute;
+									top: 13px;
+									left: 340px;
+									font-size: 13px;
+									color: #ffffff;
+								">[상황]</div>
+								<div style="
+									position:  absolute;
+									top: 13px;
+									left: 390px;
+									font-size: 13px;
+									color: #ffffff;
+								">[ PPM ]</div>
+								<div id="front-co-value" style="
+									position:  absolute;
+									top: 92px;
+									left: 391px;
+									font-size: 13px;
+									color: #ffffff;
+									text-align:  left;
+								">0.1</div>
+								<div id="front-no2-value" style="
+									position:  absolute;
+									top: 117px;
+									left: 391px;
+									font-size: 13px;
+									color: #ffffff;
+									text-align:  left;
+								">0.003</div>
+								<div id="front-so2-value" style="
+									position:  absolute;
+									top: 142px;
+									left: 391px;
+									font-size: 13px;
+									color: #ffffff;
+									text-align:  left;
+								">0.001</div>
+								<div id="front-air-refresh-time" style="
+									position:  absolute;
+									top: 145px;
+									left: 14px;
+									font-size: 12px;
+									color: #ffffff;
+									width: 145px;
+								">2018-07-05 08:00</div>
+							<div style="
+									position:  absolute;
+									top: 43px;
+									left: 163px;
+									font-size: 15px;
+									color: #e78d18;
+								">[대기오염]</div><div style="
+									position:  absolute;
+									top: 68px;
+									left: 237px;
+									font-size: 13px;
+									color: #ffffff;
+								">초미세먼지</div><div style="
+									position:  absolute;
+									top: 45px;
+									left: 237px;
+									font-size: 13px;
+									color: #ffffff;
+								">미세먼지</div><div style="
+									position:  absolute;
+									top: 73px;
+									left: 299px;
+									font-size: 10px;
+									color: #ffffff;
+								">PM2.5</div><div style="
+									position:  absolute;
+									top: 50px;
+									left: 287px;
+									font-size: 10px;
+									color: #ffffff;
+								">PM10</div><div id="front-pm2_5-grade" style="
+									position:  absolute;
+									top: 66px;
+									left: 338px;
+									font-size: 16px;
+									color: #e78d18;
+								">[좋음]</div><div id="front-pm10-grade" style="
+									position:  absolute;
+									top: 42px;
+									left: 338px;
+									font-size: 16px;
+									color: #e78d18;
+								">[좋음]</div><div id="front-pm2_5-value" style="
+									position:  absolute;
+									top: 68px;
+									left: 391px;
+									font-size: 13px;
+									color: #ffffff;
+									text-align:  left;
+								">0.1</div><div id="front-pm10-value" style="
+									position:  absolute;
+									top: 45px;
+									left: 391px;
+									font-size: 13px;
+									color: #ffffff;
+									text-align:  left;
+								">0.1</div></div>
+
+							<div id=local-air-box-outline></div>
+							<div id=local-air-box>
+								<div id=local-air-box-type class="local-air-message">
+									<!-- 날씨 슬라이더 정보분류칸 -->
+								</div>
+
+								<div id=local-air-slider-box class="local-air-slider swiper-container">
+									<!-- 날씨 슬라이더 -->
+								</div>
+							</div>
+
+							<div id=health-upward class="animated infinite updown">
+								<a href="#menu"><img src='/resources/icons/upward.png'></img></a>
+							</div>
+							<!-- 최신날씨 갱신 버튼  -->
+							<div id=open-description>
+								<a id=open-description1>설명보기</a>
+								<img id=open-description2 src="resources/icons/open-book.png"></img>
+							</div>
+
+							<!-- 이미지 슬라이더 공간  -->
+							<div id=info-img-box>
+								<div class="swiper-container info-img-slider">
+									<div class=swiper-wrapper>
+										<!--
+										<div id="info-img-title" style="color: #5b92cb;"><p>더위체감지수 대응요령</p></div>
+											<img src="/resources/infos/heat_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>식중독지수 대응요령</p></div>
+										<img src="/resources/infos/enteritis_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>불쾌지수 대응요령</p></div>
+										<img src="/resources/infos/discomfort_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>자외선지수 대응요령</p></div>
+										<img src="/resources/infos/uv_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>폐질환지수 대응요령</p></div>
+										<img src="/resources/infos/asthma_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>뇌졸중지수 대응요령</p></div>
+										<img src="/resources/infos/stroke_act0.png" style="border-radius: 15px; width: 415px;">
+										<br>
+										<div id="info-img-title" style="color: #5b92cb;"><p>열지수 대응요령</p></div>
+										<img src="/resources/infos/heatindex_act0.png" style="border-radius: 15px; width: 415px;">
+										-->
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total1.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total2.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total3.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total4.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total5.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total6.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total7.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total8.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img src="/resources/infos/total9.png" style="border-radius: 15px; width: 415px;">
+											</div>
+										</div>
+										<!--
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>더위체감지수 설명</p></div>
+											<img src="/resources/infos/heat1.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/heat2.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/heat3.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/heat0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>식중독지수 설명</p></div>
+											<img src="/resources/infos/enteritis0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>불쾌지수 설명</p></div>
+											<img src="/resources/infos/discomfort0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>대기오염물질 설명</p></div>
+											<img src="/resources/infos/air0.jpg" style="border-radius: 15px; width: 440px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>자외선지수 설명</p></div>
+											<img src="/resources/infos/uv1.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv2.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv3.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv4.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv5.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv6.jpg" style="border-radius: 15px; width: 415px;">
+											<img src="/resources/infos/uv0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>폐질환지수 설명</p></div>
+											<img src="/resources/infos/asthma0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>뇌졸중지수 설명</p></div>
+											<img src="/resources/infos/stroke0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										<div class="swiper-slide">
+											<div id="info-img-title"><p>열지수 설명</p></div>
+											<img src="/resources/infos/heatindex0.jpg" style="border-radius: 15px; width: 415px;">
+										</div>
+										-->
+									</div>
+									<div class="swiper-pagination"></div>
+								</div>
+							</div>
+
+						</div>
 					</div>
 
 					<div name=graphic id="health-graphic">
@@ -439,5 +980,21 @@
 				</div>
 			</div>
 		</div>
+
+		<div id="bgimg" style="
+			opacity: 0.9;
+			z-index: -5;
+			width:  100%;
+			height:  100%;
+			top: 0;
+			position: fixed;
+			background:  linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef),linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef);
+			box-shadow:  0 1px 3px rgba(0, 0, 30, 0.56);
+		">
+			<div id="bgimg-inner"></div>
+			<div id="overlay-bgimg"></div>
+		</div>
+		</div>
+
 	</body>
 </html>

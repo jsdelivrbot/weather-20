@@ -171,6 +171,7 @@ export class Warning{
 								Logger.log(`기상청에서 ${dataName}을 받아왔습니다. (변경점 존재)`)
 
 								// 이미지 업데이트
+								self.imageUrls = []
 								self.imageUrls.push(self.reports.main.image)
 								self.imageUrls.push(self.reports.sub.image)
 								self.update(dataId, dataName, repeatDelay,

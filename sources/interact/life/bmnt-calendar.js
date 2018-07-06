@@ -41,7 +41,9 @@ let calendarInstance = new Calendar(targetCalendar, function (){
 			// 마신 횟수가 0보다 클때만 마신 날로 간주
 			if(drinkCount > 0) isRunnedDay = true
 
-			let currentDateObj = new Date((dayData.date).valueOf())
+			let targetDate = new Date(dayData.date)
+			targetDate = targetDate.setDate(targetDate.getDate() + 1)
+			let currentDateObj = new Date(targetDate)
 			let lightData = getLightData(currentDateObj)
 			let BMNT = `${lightData.dawn}`
 			let EENT = `${lightData.dusk}`
@@ -97,7 +99,11 @@ let calendarTodayProcess = (dayData, tempDiv)=> {
 	}
 
 	// 날짜 반영 후 색상 변경
-	tempDiv.firstChild.style.background = '#df8918'
+	tempDiv.firstChild.style.background = '#a55697'
+	tempDiv.firstChild.style.borderColor = '#fff'
+	tempDiv.firstChild.style.borderStyle = 'solid'
+	tempDiv.firstChild.style.borderWidth = '3'
+	tempDiv.firstChild.style.zIndex = '1'
 }
 
 // 현재 보여지고 있는 년월 정보를 출력

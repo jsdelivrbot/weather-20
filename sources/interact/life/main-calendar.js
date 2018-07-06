@@ -34,9 +34,11 @@ let calendarInstance = new Calendar(targetCalendar, function (){
 			let moneyCount = 0
 			let peopleCount = 1
 
-			let currentDateObj = new Date((dayData.date).valueOf())
+			let targetDate = new Date(dayData.date)
+			targetDate = targetDate.setDate(targetDate.getDate() + 1)
+			let currentDateObj = new Date(targetDate)
 			let lightData = getLightData(currentDateObj)
-			
+
 			// 월광 퍼센테이지
 			let MoonLightPercentageNum = lightData.moonActualLightPercentage.toFixed(0)
 			let MoonLightPecentage = `${MoonLightPercentageNum}%`
@@ -110,7 +112,11 @@ let calendarTodayProcess = (dayData, tempDiv)=> {
 	}
 
 	// 날짜 반영 후 색상 변경
-	tempDiv.firstChild.style.background = '#df8918'
+	tempDiv.firstChild.style.background = '#a55697'
+	tempDiv.firstChild.style.borderColor = '#fff'
+	tempDiv.firstChild.style.borderStyle = 'solid'
+	tempDiv.firstChild.style.borderWidth = '3'
+	tempDiv.firstChild.style.zIndex = '1'
 }
 
 // 현재 보여지고 있는 년월 정보를 출력

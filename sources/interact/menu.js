@@ -21,11 +21,11 @@ var hooks = {
 	life: []
 }
 
-export function getPage () {
+export function getPage(){
 	return currentPage
 }
 
-export function resetMenu () {
+export function resetMenu(){
 	if(menuBarWeather.classList.contains('menu-item-selected'))
 		menuBarWeather.classList.remove('menu-item-selected')
 	if(menuBarLife.classList.contains('menu-item-selected'))
@@ -41,7 +41,7 @@ export function resetMenu () {
 		menuBarHealth.classList.remove('menu-item')
 }
 
-export function weatherPageRoute (event) {
+export function weatherPageRoute(event){
 	if(currentPage == 'weather') return
 	let effects = getEffects()
 
@@ -130,10 +130,25 @@ export function MenuInit (){
 	menuBarLife.addEventListener('click', lifePageRoute)
 	menuBarHealth.addEventListener('click', healthPageRoute)
 
-	// 날씨정보 메뉴를 메인으로 승격
+	let effects = getEffects()
 	weatherPageRoute()
 
-	let effects = getEffects()
+	setTimeout(()=>{
+		// 날씨정보 메뉴를 메인으로 승격
+		document.getElementById('splash').style.display = 'none'
+		document.getElementById('splash-back').style.display = 'none'
+	}, 4000)
+
+	window.addEventListener("deviceorientation", function(event){
+		let xOffset = (Math.round(event.beta))
+		let yOffset = (Math.round(event.gamma))
+		let angleOffset = (Math.round(event.alpha))
+		xOffset *= 0.1
+		yOffset *= 0.1
+
+		document.getElementById(`bgimg-inner`).style.right = `${yOffset}%`
+		document.getElementById(`bgimg-inner`).style.bottom = `${xOffset}%`
+	}, true)
 }
 
 export function MenuHook (pageName, callback){

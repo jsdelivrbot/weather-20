@@ -8,6 +8,7 @@ let rest = new restful.Client()
 let Address = require('./content/address.js').default
 let Weather = require('./content/weather.js').default
 let Dust = require('./content/dust.js').default
+let Forest = require('./content/forest.js').default
 
 // 아래부터 생활정보 묶음
 let Industry = require('./content/industry.js')
@@ -15,6 +16,7 @@ let Map = require('./content/map.js')
 let AirQuality = require('./content/airquality.js')
 let Dustmap = require('./content/dustmap.js')
 let AWSLive = require('./content/awslive.js')
+let CityLive = require('./content/citylive.js')
 let Warning = require('./content/warning.js')
 
 // 데이터페이스 인자
@@ -35,6 +37,7 @@ let DatabaseInit = (app)=>{
 		Address(app, database)
 		Weather(app, database)
 		Dust(app, database)
+		Forest(app, database)
 
 		continuable.push(Industry.Heatdata(app, database))    // 온도지수
 		continuable.push(Industry.Enteritis(app, database))   // 식중독지수
@@ -55,7 +58,9 @@ let DatabaseInit = (app)=>{
 
 		continuable.push(Dustmap.Gif(app, database))
 		continuable.push(AirQuality.File(app, database))
+		
 		continuable.push(AWSLive.File(app, database))
+		continuable.push(CityLive.File(app, database))
 		continuable.push(Warning.File(app, database))
 	})
 }
@@ -84,6 +89,7 @@ class Receiver {
 			Address(app, database)
 			Weather(app, database)
 			Dust(app, database)
+			Forest(app, database)
 
 			for (let continuableObject of continuable)
 				continuableObject.change(app)

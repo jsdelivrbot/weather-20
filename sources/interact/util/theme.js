@@ -11,10 +11,10 @@ var effects = {
 
 var colorTheme = {
 	cloud: {
-		main: '#0c4358',
-		sub: '#0c4358',
-		border: '#0c4358',
-		fill: '#0c4358',
+		main: 'rgba(23, 23, 23, 0.43)',
+		sub: '#515c63',
+		border: 'rgba(23, 23, 23, 0.43)',
+		fill: 'rgb(81, 92, 99)',
 		background: '#FFFFFF'
 	},
 	aqua: {
@@ -80,15 +80,15 @@ export function ThemePreInit (){
 	}, false)
 
 	// 튕김 효과 생성
-	effects.weatherFlick = new Flick('weather-flick', ['#ADCADD', '#FFFFFF'])
-	effects.lifeFlick = new Flick('life-flick', ['#ADCADD', '#FFFFFF'])
-	effects.healthFlick = new Flick('health-flick', ['#ADCADD', '#FFFFFF'])
+	effects.weatherFlick = new Flick('weather-flick', ['#89d2e891', '#b3b3b3b0'])
+	effects.lifeFlick = new Flick('life-flick', ['#89d2e891', '#b3b3b3b0'])
+	effects.healthFlick = new Flick('health-flick', ['#89d2e891', '#b3b3b3b0'])
 }
 
 export function ThemeInit(){
 	menuLogoInfo = document.getElementById('menu-logo-info')
 	menuAccountInfo = document.getElementById('menu-account-info')
-	
+
 	loginQuestion = document.getElementById('login-question')
 	loginOrLogoutButton = document.getElementById('login-question-login-or-logout')
 	loginOrLogoutButtonInfo1 = document.getElementById('login-question-register-or-unregister-info1')
@@ -96,7 +96,7 @@ export function ThemeInit(){
 	registerOrUnregisterButtonInfo1 = document.getElementById('login-question-login-or-logout-info1')
 	loginIdInput = document.getElementById('login-question-id-input')
 	loginPwInput = document.getElementById('login-question-pw-input')
-	
+
 	addressQuestion = document.getElementById('address-question')
 }
 
@@ -121,6 +121,8 @@ export function getEffects(){
 // 테마적용 함수 구현
 export function applyColorTheme (color, custom){
 	let isActivatedLoginQuestion = false
+	let isActivatedRegisterQuestion = false
+	let isActivatedHeatQuestion = false
 	let isActivatedAddressQuestion = false
 
 	// 활성화 된 메뉴 가져오기
@@ -130,8 +132,19 @@ export function applyColorTheme (color, custom){
 
 	try {
 		isActivatedLoginQuestion =
-			window.getComputedStyle(loginQuestion).display != 'none'
+			window.getComputedStyle(document.getElementById('login-question')).display != 'none'
 	}catch(e) {}
+
+	try {
+		isActivatedRegisterQuestion =
+			window.getComputedStyle(document.getElementById('register-question')).display != 'none'
+	}catch(e) {}
+
+	try {
+		isActivatedHeatQuestion =
+			window.getComputedStyle(document.getElementById('heat-question')).display != 'none'
+	}catch(e) {}
+
 	try {
 		isActivatedAddressQuestion =
 			window.getComputedStyle(addressQuestion).display != 'none'
@@ -197,17 +210,53 @@ export function applyColorTheme (color, custom){
 	}
 
 	if(isActivatedLoginQuestion){
-		loginQuestion.style.background = mainColor
-		loginOrLogoutButton.style.borderColor = mainColor
-		registerOrUnregisterButton.style.borderColor = mainColor
-		loginOrLogoutButtonInfo1.style.color = mainColor
-		registerOrUnregisterButtonInfo1.style.color = mainColor
+		document.getElementById('login-question').style.background = subColor
+		document.getElementById('login-question-login-or-logout').style.borderColor = mainColor
+		document.getElementById('login-question-register-or-unregister').style.borderColor = mainColor
+		document.getElementById('login-question-register-or-unregister-info1').style.color = mainColor
+		document.getElementById('login-question-login-or-logout-info1').style.color = mainColor
 		
-		loginIdInput.style.color = mainColor
-		loginPwInput.style.color = mainColor
+		document.getElementById('login-question-id-input').style.color = mainColor
+		document.getElementById('login-question-pw-input').style.color = mainColor
+	}
+	if(isActivatedRegisterQuestion){
+		document.getElementById('register-question').style.background = subColor
+		//register-question-name-input
+		document.getElementById('register-question-login-or-logout').style.borderColor = mainColor
+		document.getElementById('register-question-register-or-unregister').style.borderColor = mainColor
+		document.getElementById('register-question-register-or-unregister-info1').style.color = mainColor
+		document.getElementById('register-question-login-or-logout-info1').style.color = mainColor
+		
+		document.getElementById('register-question-area-input').style.borderColor = mainColor
+		document.getElementById('register-question-area-input').style.color = mainColor
+		document.getElementById('register-question-name-input').style.borderColor = mainColor
+		document.getElementById('register-question-name-input').style.color = mainColor
+		document.getElementById('register-question-addr-input').style.borderColor = mainColor
+		document.getElementById('register-question-addr-input').style.color = mainColor
+		document.getElementById('register-question-phone-input').style.borderColor = mainColor
+		document.getElementById('register-question-phone-input').style.color = mainColor
 	}
 	
+	if(isActivatedHeatQuestion){
+		document.getElementById('heat-question').style.background = subColor
+		document.getElementById('heat-question-login-or-logout').style.borderColor = mainColor
+		document.getElementById('heat-question-register-or-unregister').style.borderColor = mainColor
+
+		document.getElementById('heat-question-name-input').style.borderColor = mainColor
+		document.getElementById('heat-question-name-input').style.color = fillColor
+		document.getElementById('heat-question-addr-input').style.borderColor = mainColor
+		document.getElementById('heat-question-addr-input').style.color = fillColor
+		document.getElementById('heat-question-phone-input').style.borderColor = mainColor
+		document.getElementById('heat-question-phone-input').style.color = fillColor
+		document.getElementById('heat-question-temp-input').style.borderColor = mainColor
+		document.getElementById('heat-question-temp-input').style.color = fillColor
+
+		document.getElementById('heat-question-rtemp1-input').style.color = fillColor
+		document.getElementById('heat-question-rtemp2-input').style.color = fillColor
+		document.getElementById('heat-question-rtemp3-input').style.color = fillColor
+	}
+
 	if(isActivatedAddressQuestion){
-		addressQuestion.style.background = mainColor
+		addressQuestion.style.background = subColor
 	}
 }

@@ -1,17 +1,22 @@
 import {PopupDisplayFinished} from '../popup.js'
 import {LocalWeatherUpdate} from '../weather/local-weather.js'
+import {UpdateAddressBar} from '../life/address.js'
 import API from '../../transmitter/api.js'
 
 let popupPannel = document.getElementById('popup')
 let questionPannel = document.getElementById('address-question')
-let questionClose = document.getElementById('address-question-close')
 
 let addressBox = document.getElementById(`address-box`)
 let isAlreadyListnerInstalled = false
 let callback = null
 
 let addressSlider = null
-let lastCheckedTimestamp = null
+
+// 메인 주소슬라이더 중 선택된 아이템 번째 수
+let currentSelectedIndexNum = null
+
+// 필터링할 단어목록
+let filteredWords = []
 
 let finisher = () => {
 
@@ -21,107 +26,310 @@ let finisher = () => {
 
 	addressBox.innerHTML = ``
 	currentSelected = ``
+	currentSearchMode = 'input'
 
 	popupPannel.style.display = 'none'
 	questionPannel.style.display = 'none'
-	
+	document.getElementById('address-input').value = ''
+
 	PopupDisplayFinished()
 }
 
 let currentSelected = ''
+let lastParamDatas = null
 
-export function AddressQuestionInit (){
-	window.armyWeather.util.addressSelect = (timestamp, selected)=>{
+// 기본검색모드 설정
+let currentSearchMode = 'list'
+let selectInput = document.getElementById('address-select-input')
+let selectList = document.getElementById('address-select-list')
 
-		// 슬라이더 닫혔으면 패스
-		if(addressSlider === null) return
+export function SelectModeUpdate(){
+	if(selectInput.classList.contains('address-type-item-selected'))
+		selectInput.classList.remove('address-type-item-selected')
+	if(selectList.classList.contains('address-type-item-selected'))
+		selectList.classList.remove('address-type-item-selected')
+	if(currentSearchMode == 'list')
+		selectList.classList.add('address-type-item-selected')
+	if(currentSearchMode == 'input')
+		selectInput.classList.add('address-type-item-selected')
+}
 
-		// 중복 주소 처리 방지
-		if(lastCheckedTimestamp === timestamp) return
-		lastCheckedTimestamp = timestamp
+export function AddressSelect(selectedNum){
+	// 슬라이더 닫혔으면 패스
+	if(addressSlider === null) return;
+	
+	if(currentSelected.length != 0)
+		currentSelected += '.'
+	currentSelected += document.getElementById(`address-item-${selectedNum}`).children[0].innerText
 
-		if(currentSelected.length != 0)
-			currentSelected += '.'
-		currentSelected += selected
-
+	if(currentSearchMode == 'list'){
 		API.call('/api/address',{key:currentSelected},(paramDatas)=>{
-
 			try{
 				if(paramDatas.isLast){
-					// TODO 현재 위치 적용
-					// document.getElementById(`day-weather-location-info2`).innerHTML = currentSelected.split('.').join(' ')
+					let addressLastNamePre = currentSelected.split('.')
+					let addressName = ''
+					for(let preNameIndex = addressLastNamePre.length-1; preNameIndex>=0;preNameIndex--){
+						let preAddressName = addressLastNamePre[preNameIndex]
+						if(preAddressName.length != 0){
+							addressName = preAddressName
+							break
+						}
+					}
+					
 					window.armyWeather.private.address.main = {
+						name: addressName,
 						cell: paramDatas.data[0],
 						long: paramDatas.data[1],
 						lat: paramDatas.data[2],
 						key: currentSelected
 					}
-					// TODO
-					// 새로 그려넣기 추가
+
+					if(window.armyWeather.private.address.sub.length === 0 ||
+					  (window.armyWeather.private.address.sub.length-1) < currentSelectedIndexNum)
+						currentSelectedIndexNum = null
+
+					if(currentSelectedIndexNum === null){
+						window.armyWeather.private.address.sub.push({
+							name: addressName,
+							cell: paramDatas.data[0],
+							long: paramDatas.data[1],
+							lat: paramDatas.data[2],
+							key: currentSelected
+						})
+						window.armyWeather.private.address.index = window.armyWeather.private.address.sub.length-1
+						if(window.armyWeather.private.address.index < 0) window.armyWeather.private.address.index = 0
+					}else{
+						window.armyWeather.private.address.index = currentSelectedIndexNum
+						window.armyWeather.private.address.sub[currentSelectedIndexNum] = {
+							name: addressName,
+							cell: paramDatas.data[0],
+							long: paramDatas.data[1],
+							lat: paramDatas.data[2],
+							key: currentSelected
+						}
+					}
+
 					currentSelected = ``
 					finisher()
+					UpdateAddressBar()
 					LocalWeatherUpdate()
 					return
 				}
-			}catch(e){}
+			}catch(e){
+				console.log(e)
+			}
 
 			// 슬라이더 닫혔으면 패스
 			if(addressSlider === null) return
-
-			try{
-				let addressHTML = '<div id=address-slider>'
-				let paramTimestamp = (new Date()).getTime()
-				for(let paramData of paramDatas.data){
-
-					addressHTML += 
-`<a href="javascript:window.armyWeather.util.addressSelect(${paramTimestamp},'${paramData}')"><div class="address-message">
-<div class="address-context">
-${(paramData.length ==0) ? '(전체)' : paramData }
-</div>
-</div></a>`
-				}
-				addressHTML += `</div>`
-				addressBox.innerHTML = ``
-				addressBox.insertAdjacentHTML('beforeend', addressHTML)
-
-				// 슬라이더 추가
-				addressSlider = tns({
-					container: '#address-slider',
-					items: 6,
-					slideBy: 'page',
-					axis: 'vertical',
-					controlsText: ['이전', '다음'],
-					mouseDrag: true,
-					autoHeight: false,
-					controls: true,
-					autoplay: false,
-					nested: true,
-					speed: 300,
-					swipeAngle: false,
-					freezable: false,
-					arrowKeys: true
-				})
-			}catch(e){}
+			AddressSliderUpdate(paramDatas)
 		})
+	}else if(currentSearchMode == 'input'){
+		if(lastParamDatas === null) return
+		let lastParamData = lastParamDatas.data[selectedNum]
+
+		let addressLastNamePre = lastParamData[3].split('.')
+		let addressName = ''
+		for(let preNameIndex = addressLastNamePre.length-1; preNameIndex>=0;preNameIndex--){
+			let preAddressName = addressLastNamePre[preNameIndex]
+			if(preAddressName.length != 0){
+				addressName = preAddressName
+				break
+			}
+		}
+
+		window.armyWeather.private.address.main = {
+			name: addressName,
+			cell: lastParamData[0],
+			long: lastParamData[1],
+			lat: lastParamData[2],
+			key: lastParamData[3]
+		}
+
+		if(window.armyWeather.private.address.sub.length === 0 ||
+		  (window.armyWeather.private.address.sub.length-1) < currentSelectedIndexNum)
+			currentSelectedIndexNum = null
+
+		if(currentSelectedIndexNum === null){
+			window.armyWeather.private.address.sub.push({
+				name: addressName,
+				cell: lastParamData[0],
+				long: lastParamData[1],
+				lat: lastParamData[2],
+				key: lastParamData[3]
+			})
+			window.armyWeather.private.address.index = window.armyWeather.private.address.sub.length-1
+			if(window.armyWeather.private.address.index < 0) window.armyWeather.private.address.index = 0
+		}else{
+			window.armyWeather.private.address.index = currentSelectedIndexNum
+			window.armyWeather.private.address.sub[currentSelectedIndexNum] = {
+				name: addressName,
+				cell: lastParamData[0],
+				long: lastParamData[1],
+				lat: lastParamData[2],
+				key: lastParamData[3]
+			}
+		}
+		
+		currentSelected = ``
+		finisher()
+		UpdateAddressBar()
+		LocalWeatherUpdate()
 	}
-
-	//weatherLocation.addEventListener('click', (event)=>{
-
-	//	// 기본 로그인 처리
-	//	AddressQuestion()
-	//})
 }
 
-export function AddressQuestion (paramCallback) {
+export function AddressSliderUpdate(paramDatas){
+	if(addressSlider != null)
+		addressSlider.destroy()
+
+	if(paramDatas === undefined){
+		paramDatas = lastParamDatas
+	}else{
+		lastParamDatas = paramDatas
+	}
+
+	try{
+		let addressHTML = '<div id=address-slider class=popup-address-slider><div class=swiper-wrapper>'
+
+		// 순서대로 소트
+		paramDatas.data.sort()
+		if(currentSearchMode == 'list'){
+			for(let paramDataIndex in paramDatas.data){
+				let paramData = paramDatas.data[paramDataIndex]
+
+				// 만약 찾는 단어가 없으면 넘기기
+				let isFilterMatched = true
+				for(let filteredWord of filteredWords){
+					if(paramData.indexOf(filteredWord) === -1){
+						isFilterMatched = false
+						break
+					}
+				}
+				if(!isFilterMatched) continue
+
+				addressHTML +=
+				`<div id=address-item-${paramDataIndex} class="address-message swiper-slide">
+				<div class="address-context">
+				${(paramData.length ==0) ? '(전체)' : paramData }
+				</div>
+				</div>`
+			}
+		}else if(currentSearchMode == 'input'){
+			for(let paramDataIndex in paramDatas.data){
+				let paramData = paramDatas.data[paramDataIndex]
+
+				addressHTML +=
+				`<div id=address-item-${paramDataIndex} class="address-message swiper-slide">
+				<div class="address-context">
+				${(paramData.length ==0) ? '(전체)' : paramData[3].split('.').join(' ') }
+				</div>
+				</div>`
+			}
+		}
+		addressHTML += `</div><div class="swiper-scrollbar white-scrollerbar"></div></div>`
+		addressBox.innerHTML = ``
+		addressBox.insertAdjacentHTML('beforeend', addressHTML)
+	}catch(e){}
+
+	// 정확한 터치 감지용
+	let isTouchMoved = 0
+
+	// 슬라이더 추가
+	addressSlider = new Swiper('.popup-address-slider', {
+		direction: 'vertical',
+		slidesPerView: 7,
+		spaceBetween: 12,
+		mousewheel: true,
+		scrollbar: {
+			el: '.swiper-scrollbar',
+			hide: false,
+		},
+		on: {
+			touchMove: (ev)=>{
+				isTouchMoved++
+			},
+			touchEnd: (ev)=>{
+				if(isTouchMoved < 4){
+					for(let pathIndex in ev.path){
+						let slideElement = ev.path[pathIndex]
+						if(slideElement == undefined || typeof slideElement['id'] == 'undefined'
+							|| slideElement.id.indexOf('address-item-') == -1) continue;
+
+						let currentPage = Number(slideElement.id.split(`address-item-`)[1])
+						setTimeout(()=>{AddressSelect(currentPage)},1)
+						break
+					}
+				}
+
+				isTouchMoved = 0
+			}
+		}
+	})
+}
+
+export function AddressQuestionInit (){
+	//
+}
+
+export function AddressQuestion (paramCallback, selectedIndexNum = null) {
 	popupPannel.style.display = 'block'
 	questionPannel.style.display = 'block'
+	currentSelectedIndexNum = selectedIndexNum
 
 	if(!isAlreadyListnerInstalled) {
 		isAlreadyListnerInstalled = true
 
-		questionClose.addEventListener('click', (event)=>{
+		// 검색창 닫기
+		document.getElementById('address-question-close').addEventListener('click', (event)=>{
 			finisher()
 		})
+
+		// 아이템 삭제
+		document.getElementById('address-item-remove').addEventListener('click', (event)=>{
+			if(typeof window.armyWeather.private.address.sub[currentSelectedIndexNum] != 'undefined'){
+				window.armyWeather.private.address.sub.splice(currentSelectedIndexNum, 1)
+				window.armyWeather.private.address.index = 1
+				let refill = window.armyWeather.private.address.sub[0]
+				if(refill === undefined)
+					refill = window.armyWeather.private.address.gps
+				window.armyWeather.private.address.main = refill
+				UpdateAddressBar()
+				LocalWeatherUpdate()
+			}
+			finisher()
+		})
+
+		currentSearchMode = 'list'
+		SelectModeUpdate()
+
+		// 검색 모드 전환
+		selectInput.addEventListener('click', (event)=>{
+			API.call('/api/address',{search: ''},(paramDatas)=>{
+				currentSelected = ''
+				currentSearchMode = 'input'
+				SelectModeUpdate()
+				AddressSliderUpdate(paramDatas)
+			})
+		})
+		selectList.addEventListener('click', (event)=>{
+			API.call('/api/address',{},(paramDatas)=>{
+				currentSelected = ''
+				currentSearchMode = 'list'
+				SelectModeUpdate()
+				AddressSliderUpdate(paramDatas)
+			})
+		})
+
+		// 슬라이더 검색용 코드
+		document.getElementById(`address-input`).onkeyup = function (){
+			filteredWords = (document.getElementById(`address-input`).value).split(' ')
+			if(currentSearchMode == 'list'){
+				AddressSliderUpdate()
+			}else if(currentSearchMode == 'input'){
+				API.call('/api/address',{search: filteredWords.join(' ')},(paramDatas)=>{
+					AddressSliderUpdate(paramDatas)
+				})
+			}
+		}
 
 		// 터치방지용
 		popupPannel.addEventListener('click', (event)=>{
@@ -130,46 +338,18 @@ export function AddressQuestion (paramCallback) {
 
 		isAlreadyListnerInstalled = true
 	}
-	
+
 	if(addressSlider === null){
-		
-		// 1차 주소요청
-		API.call('/api/address',{},(paramDatas)=>{
-
-			try{
-				let addressHTML = '<div id=address-slider>'
-				let paramTimestamp = (new Date()).getTime()
-				for(let paramData of paramDatas.data){
-					addressHTML += 
-`<a href="javascript:window.armyWeather.util.addressSelect(${paramTimestamp},'${paramData}')"><div class="address-message">
-<div class="address-context">
-${(paramData.length ==0)?'(입력완료)':paramData }
-</div>
-</div></a>`
-				}
-				addressHTML += `</div>`
-				addressBox.innerHTML = ``
-				addressBox.insertAdjacentHTML('beforeend', addressHTML)
-
-				// 슬라이더 추가
-				addressSlider = tns({
-					container: '#address-slider',
-					items: 6,
-					slideBy: 'page',
-					axis: 'vertical',
-					controlsText: ['이전', '다음'],
-					mouseDrag: true,
-					autoHeight: false,
-					controls: true,
-					autoplay: false,
-					nested: true,
-					speed: 300,
-					swipeAngle: false,
-					freezable: false,
-					arrowKeys: true
-				})
-			}catch(e){}
-		})
+		if(currentSearchMode == 'list'){
+			// 최초 주소요청
+			API.call('/api/address',{},(paramDatas)=>{
+				AddressSliderUpdate(paramDatas)
+			})
+		}else if(currentSearchMode == 'input'){
+			API.call('/api/address',{search: ''},(paramDatas)=>{
+				AddressSliderUpdate(paramDatas)
+			})
+		}
 	}
 
 	callback = paramCallback

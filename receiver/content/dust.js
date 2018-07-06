@@ -28,7 +28,7 @@ rootDataUrl += `&numOfRows=10&pageSize=10&pageNo=1&startPage=1&InformCode=PM10`
 
 
 //dustStationData
-export function findStation(paramLat, paramLong){
+export function findStation(paramLat, paramLong, isNeedSubStation = false){
 	let lat = Number(paramLat)
 	let long = Number(paramLong)
 
@@ -51,11 +51,7 @@ export function findStation(paramLat, paramLong){
 		if(dustStationData['supportTypes'].indexOf('SO2') == -1) continue
 
 		// 측정소 위치가 교외지역이면 배제
-		// if(dustStationData['dataType'] == '교외대기') continue
-
-		// TODO
-		// 초미세먼지 데이터는 따로 요청
-		// 교외대기
+		if(isNeedSubStation && dustStationData['dataType'] == '교외대기') continue
 
 		if(foundedStationData === null || foundedStationData.diff > coordDiff){
 			dustStationData.diff = coordDiff
@@ -116,7 +112,11 @@ export function RequestRootData(database, callback){
 
 						Logger.log(`한국환경공단으로부터 전국 대기오염 예상 데이터를 받아왔습니다.`)
 
-						database.metadata.set(`dust.root`, parsedRootDatas)
+						let dataSchema = {
+							timestamp: (new Date()).getTime(),
+							data: parsedRootDatas
+						}
+						database.metadata.set(`dust.root`, dataSchema)
 
 						if(typeof callback === 'function')
 							callback(parsedRootDatas)
@@ -134,14 +134,16 @@ export function RequestRootData(database, callback){
 			return
 		}
 
-		// 입력되어 있는 날씨 값을 콜백에 전달합니다.
+		let callbackData = null
+		if(typeof data['data'] != 'undefined')
+			callbackData = data['data']
 		if(typeof callback === 'function')
-			callback(data)
+			callback(callbackData)
 	})
 }
 
-export function RequestStationData(database, paramLat, paramLong, callback){
-	let station = findStation(paramLat, paramLong)
+export function RequestStationData(database, paramLat, paramLong, callback, isNeedSubStation = false){
+	let station = findStation(paramLat, paramLong, isNeedSubStation)
 	database.metadata.get(`dust.station.${station.name}`, (isSuccess, data)=>{
 
 		// 기존 데이터가 없는 경우 또는
@@ -202,7 +204,12 @@ export function RequestStationData(database, paramLat, paramLong, callback){
 						// 11번째 데이터로 측정소 정보추가
 						parsedDustStationData.push(station)
 
-						database.metadata.set(`dust.station.${station.name}`, parsedDustStationData)
+						let dataSchema = {
+							timestamp: (new Date()).getTime(),
+							data: parsedDustStationData
+						}
+						database.metadata.set(`dust.station.${station.name}`, dataSchema)
+						//database.metadata.set(`dust.station.${station.name}`, parsedDustStationData)
 
 						if(typeof callback === 'function')
 							callback(parsedDustStationData)
@@ -217,9 +224,11 @@ export function RequestStationData(database, paramLat, paramLong, callback){
 			return
 		}
 
-		// 입력되어 있는 날씨 값을 콜백에 전달합니다.
+		let callbackData = null
+		if(typeof data['data'] != 'undefined')
+			callbackData = data['data']
 		if(typeof callback === 'function')
-			callback(data)
+			callback(callbackData)
 	})
 }
 
@@ -244,6 +253,14 @@ export default function Dust(app, database) {
 						})
 						response.end()
 					})
+					return
+				}
+				if(requestSchema['type'] == 'sub'){
+					RequestStationData(database, x, y, (dailyDataSchema)=>{
+						response.send(dailyDataSchema)
+						response.end()
+					}, true)
+					return
 				}
 				return
 			}

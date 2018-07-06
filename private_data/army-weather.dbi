@@ -4,23 +4,322 @@
          "_id": "L1mg6zE06W1wltzT"
       },
       "local": {
+         "1100000000": {
+            "_id": "3kBXy0QNsRX57Ba3"
+         },
+         "1111000000": {
+            "_id": "2zmuMMlkHsyXYm0h"
+         },
+         "1111051500": {
+            "_id": "wzXCxpBGom61tGy2"
+         },
+         "1111053000": {
+            "_id": "8pyCFeC6k0nTX4gW"
+         },
+         "1111054000": {
+            "_id": "mAepF60POT0gRa7Q"
+         },
+         "1111055000": {
+            "_id": "05AhraIEe4QUtI3Z"
+         },
          "1111056000": {
             "_id": "Nx4QwmydcvtdyfSk"
          },
-         "4165039000": {
-            "_id": "Iw7DeoiwBykhlKNL"
-         }
-      },
-      "live": {
-         "1111056000": {
-            "_id": "CgVzA8YVl3qhxmaw"
+         "1111060000": {
+            "_id": "5PxpVHX2SsfHfOTG"
+         },
+         "1111064000": {
+            "_id": "b5SiP1TN1u35Cu5F"
+         },
+         "1111065000": {
+            "_id": "P6PQuBHWwMYfxgIq"
+         },
+         "1111068000": {
+            "_id": "MfWDAI6nNhX2x0GO"
+         },
+         "1114000000": {
+            "_id": "yK3SkyBVCtFoOxf7"
+         },
+         "1114061500": {
+            "_id": "4W83DBfoV5cA9Srb"
+         },
+         "1114063500": {
+            "_id": "32i1HCCUdSS0WQ6u"
+         },
+         "1117053000": {
+            "_id": "asNqQDqDDOilAPWm"
+         },
+         "1135067000": {
+            "_id": "3xEwWk2x147VwpN9"
+         },
+         "1165066000": {
+            "_id": "2gYRuXFUeWUS6Tyb"
+         },
+         "1168051000": {
+            "_id": "CXuaAB5K3xJNJ2dB"
+         },
+         "1174055000": {
+            "_id": "9N9LYcr8J0BtedSp"
+         },
+         "1174056000": {
+            "_id": "WyE9NjdJ6N5Ctrzy"
+         },
+         "2600000000": {
+            "_id": "Ne4eP72oI7rXqiYW"
+         },
+         "2611051000": {
+            "_id": "3SlPGwcVcXDAd4kX"
+         },
+         "2611052000": {
+            "_id": "Z86NzHbYPh8pRxJH"
+         },
+         "2617055000": {
+            "_id": "hNS3qHBu1tsMi0wz"
+         },
+         "2700000000": {
+            "_id": "A8EtEL286NegANqT"
+         },
+         "2714052000": {
+            "_id": "kSaaemzzSgWmOze6"
+         },
+         "2714053000": {
+            "_id": "6npsEil3Xoc7J1TB"
+         },
+         "2714061500": {
+            "_id": "DN71RLLAaX5PA2Ji"
+         },
+         "2729062800": {
+            "_id": "3OxxpWOxQZmrbvUD"
+         },
+         "2800000000": {
+            "_id": "3LCnVdevXvAQfelW"
+         },
+         "2811052000": {
+            "_id": "qRkxEUMwwYB8spAz"
+         },
+         "2814053000": {
+            "_id": "6XVcAVyTp8fNND2p"
+         },
+         "2817054000": {
+            "_id": "ygcDkeTM9M8JiGxt"
+         },
+         "2900000000": {
+            "_id": "dr3z27qYMjOLrzhC"
+         },
+         "3000000000": {
+            "_id": "IIrUFAw4U7dQUCyG"
+         },
+         "3020000000": {
+            "_id": "msaCC4UGNV6puNbC"
+         },
+         "3020054000": {
+            "_id": "y4Q0DKQTVhvEhwdx"
+         },
+         "3020054700": {
+            "_id": "zxfJeX2wgsJF1Szv"
+         },
+         "3023052000": {
+            "_id": "Lufm6kRLSZEuTzwp"
+         },
+         "3100000000": {
+            "_id": "7vMP4RMZ76QlJgKc"
+         },
+         "3600000000": {
+            "_id": "4cXaloafIwATLX2l"
+         },
+         "3611025000": {
+            "_id": "N2sm6HkOkuTSlesU"
+         },
+         "4111573000": {
+            "_id": "MItOCoGHCLMI7PcM"
+         },
+         "4128751000": {
+            "_id": "7hBlsHmKxEFNo4Qj"
+         },
+         "4165000000": {
+            "_id": "01UVLCyp7czxwC2i"
+         },
+         "4165034000": {
+            "_id": "nyFZP2ler3y6bea3"
+         },
+         "4165036000": {
+            "_id": "lrNRjde7skNL52Nh"
+         },
+         "4165038000": {
+            "_id": "1a9ZDsVhFRxHNwwz"
          },
          "4165039000": {
-            "_id": "7pfkQr4DMK6ERFKM"
+            "_id": "Iw7DeoiwBykhlKNL"
+         },
+         "4165051000": {
+            "_id": "C0VVNB19mZzuU19i"
+         },
+         "4182025000": {
+            "_id": "0K7HK91JmG6grZFO"
+         },
+         "4211066000": {
+            "_id": "o420t446kXQBcp8C"
+         },
+         "4213025000": {
+            "_id": "7S50cekwzdszwwh3"
+         },
+         "4213052000": {
+            "_id": "gUpnLdcmefxvX0e2"
+         },
+         "4215000000": {
+            "_id": "z1VvhA2AJyu8PKp5"
+         },
+         "4215066500": {
+            "_id": "sYkhhFJMq0TeotIj"
+         },
+         "4729053000": {
+            "_id": "eSjVaS3KnyO9NvEq"
+         },
+         "4831034000": {
+            "_id": "6ZRxzWyxG0OIwnQs"
+         },
+         "4794033000": {
+            "_id": "4Dhn7IfM0zTtaWKG"
+         },
+         "4825062000": {
+            "_id": "izRKbEHnEuylTg15"
+         },
+         "4825061000": {
+            "_id": "ZgvJHzz0lseiRhg4"
+         },
+         "4313053500": {
+            "_id": "boChgYFhApzPVfNm"
+         },
+         "4794032000": {
+            "_id": "xATjJZ3Zn36KtMzW"
+         },
+         "4611051000": {
+            "_id": "bKjEDcjhKLA3lZDK"
+         },
+         "4511151000": {
+            "_id": "eHeyqsxLmwZyw7yD"
+         },
+         "5011051000": {
+            "_id": "Vokl1bpilUDp2o1x"
+         },
+         "4613051500": {
+            "_id": "HxIDuLPvD24H2V0P"
+         },
+         "4888040000": {
+            "_id": "YQmYfdpDEKYbWWsy"
+         },
+         "4812154000": {
+            "_id": "YpJT0OnOlNVUriXU"
+         },
+         "4812565000": {
+            "_id": "2iKWm3jOxBEwjSvs"
+         },
+         "4812152000": {
+            "_id": "J0WU5JU4VV38kagF"
+         },
+         "5013059000": {
+            "_id": "AtGBcdfqT3lwZ5Yp"
+         },
+         "4812155000": {
+            "_id": "6bsKjP80bk3H4jYD"
+         },
+         "4313000000": {
+            "_id": "ZVOEvNE2uUxJSkPB"
          }
       },
       "weekly": {
-         "_id": "kBHPgr7zzpGKuYp0"
+         "105": {
+            "_id": "nLSxFbwJwWocihKi"
+         },
+         "109": {
+            "_id": "0L9NfdWTnCKbJchH"
+         },
+         "131": {
+            "_id": "0CyeyJY5wuWPn7pU"
+         },
+         "143": {
+            "_id": "VlxeK332ULpqsJaJ"
+         },
+         "159": {
+            "_id": "Foply5ht8zO8XSXa"
+         },
+         "184": {
+            "_id": "LsqRqbluOTOhvfsb"
+         }
+      },
+      "live": {
+         "1100000000": {
+            "_id": "RyCv39PIPyhQI6u9"
+         },
+         "1117053000": {
+            "_id": "1M2zE6nXyjuX1SWU"
+         },
+         "2600000000": {
+            "_id": "P9EAXU9Q2rVjvqcv"
+         },
+         "2700000000": {
+            "_id": "sZMgR8Vp1gal3SoN"
+         },
+         "2800000000": {
+            "_id": "Oq7JoYBaV9elA35a"
+         },
+         "2900000000": {
+            "_id": "koFJ4cd5psqDn4qA"
+         },
+         "3000000000": {
+            "_id": "0K8iaeBgOGGh26wL"
+         },
+         "3023052000": {
+            "_id": "aoGOzqWeaflT6Jpv"
+         },
+         "3100000000": {
+            "_id": "Uh3dDUzz5KGId3DN"
+         },
+         "3600000000": {
+            "_id": "wzs0Ndx0SAnWTGsl"
+         },
+         "4111573000": {
+            "_id": "nq7ZkVdigLepgW3x"
+         },
+         "4165039000": {
+            "_id": "cumsyaCq7kCdVloM"
+         },
+         "4165051000": {
+            "_id": "vz7lHArsZUhJBaI3"
+         },
+         "4211066000": {
+            "_id": "DLLfFAiD6pc80dYv"
+         },
+         "4213025000": {
+            "_id": "duD1DgAVRO0v916G"
+         },
+         "4213052000": {
+            "_id": "oKFJ1ednTRzahpkj"
+         },
+         "4215000000": {
+            "_id": "ud4SMhpTGtNPesVv"
+         },
+         "4313053500": {
+            "_id": "u1pBkirX1RrBQKRs"
+         },
+         "4794032000": {
+            "_id": "aXEvmBWYW1OOVvmf"
+         },
+         "4511151000": {
+            "_id": "5RIrysbKzmgm5J4e"
+         },
+         "4611051000": {
+            "_id": "6bhzDKljjc0ywhpG"
+         },
+         "5011051000": {
+            "_id": "bheJOmo6gQZ2BwAT"
+         },
+         "4613051500": {
+            "_id": "L8MhRhVZ08gLfHzx"
+         },
+         "4313000000": {
+            "_id": "ru8ZVDtumWMhEBbT"
+         }
       }
    },
    "life": {
@@ -43,23 +342,7 @@
          "_id": "7FHhUfb54zunppcE"
       },
       "heatdata": {
-         "_id": "AbqyXHq5KvvW2r2z"
-      }
-   },
-   "dust": {
-      "station": {
-         "정릉로": {
-            "_id": "RSkF26vb2av0tRC4"
-         },
-         "연천읍": {
-            "_id": "gEQMCJb8bgeKpaUo"
-         },
-         "관인면": {
-            "_id": "5mNTFSt0H3rLioTC"
-         }
-      },
-      "root": {
-         "_id": "5fuWSuUXOahFuPKs"
+         "_id": "1YqswaYyqKO0cxYo"
       }
    },
    "mapdata": {
@@ -100,9 +383,142 @@
          "_id": "M08bQPiUQG3wB8bg"
       }
    },
+   "dust": {
+      "station": {
+         "관인면": {
+            "_id": "1S9AvQXWxQV6gzGj"
+         },
+         "선단동": {
+            "_id": "5ZagL2QZlFNa1tXz"
+         },
+         "한강대로": {
+            "_id": "Ib0ShUK1uEz1dJ4B"
+         },
+         "노은동": {
+            "_id": "KbATJ0F4y3NvhhjU"
+         },
+         "중구": {
+            "_id": "SoRXplkOORwAT3ai"
+         },
+         "종로": {
+            "_id": "ihteUoHS9UmyWa28"
+         },
+         "정릉로": {
+            "_id": "KFeEykBSNhy0tMET"
+         },
+         "종로구": {
+            "_id": "xLzncsZjfjS2huk4"
+         },
+         "청계천로": {
+            "_id": "jz8xhwd9uZIo6TtO"
+         },
+         "용산구": {
+            "_id": "YDjAAYETYEEly1Ir"
+         },
+         "도산대로": {
+            "_id": "AJmrQ5UR7cA6VHxy"
+         },
+         "가평": {
+            "_id": "NIeUxAwum6hNDief"
+         },
+         "장유동": {
+            "_id": "24wwJlG96KkfBAk1"
+         },
+         "강남대로": {
+            "_id": "9NiW1tCAI3ACkkCE"
+         },
+         "이곡동": {
+            "_id": "QWUYpC4RO6pfoqas"
+         },
+         "연천읍": {
+            "_id": "gePDBaRKXjaxRJQA"
+         },
+         "노원구": {
+            "_id": "xfBx1sqvI8Nyg91s"
+         },
+         "현풍면": {
+            "_id": "q4qtnBopPAs6xeol"
+         },
+         "반송로": {
+            "_id": "gpo4nsKybtUbRHrf"
+         },
+         "회원동": {
+            "_id": "EXvQ6tCbAYh3DZ2j"
+         },
+         "명서동": {
+            "_id": "9PSZ36KbWruZptga"
+         },
+         "동홍동": {
+            "_id": "TEpuGXDMnV6St2QI"
+         },
+         "용지동": {
+            "_id": "NKg2tTlmNCoW4SFo"
+         },
+         "옥천동": {
+            "_id": "YGZRHPvaB9AVcCTV"
+         },
+         "신암동": {
+            "_id": "Y30F0PGVVEvZG714"
+         },
+         "읍내동": {
+            "_id": "Vk0byB8tStXZdtyY"
+         },
+         "구월동": {
+            "_id": "YJcCoAt4kC6w6Rwo"
+         },
+         "칠금동": {
+            "_id": "lwmQxbO7CcmI7mkM"
+         },
+         "명륜동": {
+            "_id": "p9GqGiMyogR4bEcb"
+         }
+      },
+      "root": {
+         "_id": "wiftnUjbKzLdmlcA"
+      }
+   },
+   "forest": {
+      "station": {
+         "서울특별시": {
+            "_id": "gpGaowjKDqBHaqzE"
+         },
+         "대전광역시": {
+            "_id": "FZWDBAPONcKCaAR9"
+         },
+         "경기도": {
+            "_id": "dAmdso9fEnpFCmU0"
+         },
+         "부산광역시": {
+            "_id": "KsIkTh7FhgqqRcR6"
+         },
+         "대구광역시": {
+            "_id": "V8be3AAgz9iKUjBR"
+         },
+         "경상남도": {
+            "_id": "tHZy4PgUORmvyON4"
+         },
+         "제주특별자치도": {
+            "_id": "5tFC3HcLdC9HDw8t"
+         },
+         "강원도": {
+            "_id": "8JJKaAcl4IkTy47a"
+         },
+         "인천광역시": {
+            "_id": "rvCFM3v2xoB8EzU3"
+         },
+         "충청북도": {
+            "_id": "stl3Brq7Yc6bguXx"
+         }
+      }
+   },
    "warning": {
       "warning": {
-         "_id": "McTSmSOkHSX5cMxx"
+         "_id": "QDZs4XXppgk5O8q8"
+      }
+   },
+   "citylive": {
+      "citylive": {
+         "_id": "GNPGCgJM4k05izGU"
       }
    }
 }
