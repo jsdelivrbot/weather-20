@@ -1,3 +1,7 @@
+export function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 /**
  * 쿠키값 추출
  * @param cookieName 쿠키명
@@ -33,8 +37,6 @@ export function getCookie(cookieName) {
 		return null
 	}
 }
-
-
 
 /**
  * 쿠키 설정
@@ -87,7 +89,14 @@ export function MemoryPreInit (){
 				main: null,
 				sub: []
 			},
-	
+
+			identy:{
+				uid: null,
+				upw: null,
+				pid: getRandomInt(0, 10000000000),
+				cell: null
+			},
+
 			//window.armyWeather.private.monthlyWeatherData
 			liveWeatherData: null,
 			dailyWeatherData: null,
@@ -97,24 +106,69 @@ export function MemoryPreInit (){
 			liveDustData: null,
 			dailyDustData: null,
 			weeklyEnteritis: null,
-			weeklyHeatdata: null
-		}
+			weeklyHeatdata: null,
+
+			apiPath: `http://armyweather.run.goorm.io`,
+			logined: false,
+			isOverPower: false,
+			isLocalPower: false,
+			isAlarm: true
+		},
+		
+		callback: {}
 	}
 
-	// 최초 호출 시 쿠키를 불러옵니다.
-	let pastCookieData = getCookie(`address`)
+	// 최초 호출 시 주소쿠키를 불러옵니다.
+	let pastCookieData 
+
+	pastCookieData = getCookie(`address`)
 	if(pastCookieData !== null)
 		try{window.armyWeather.private.address = JSON.parse(pastCookieData)}catch(e){}
 
-	 // 3초마다 개인설정 쿠키저장
-	let priviousSaved = null
+	 // 3초마다 주소쿠키 저장
+	let priviousSavedAddress = null
 	setInterval(()=>{
 		try{
 			let temp = JSON.stringify(window.armyWeather.private.address)
-			if(priviousSaved == temp) return
+			if(priviousSavedAddress == temp) return
 
 			setCookie(`address`, temp)
-			priviousSaved = temp
+			priviousSavedAddress = temp
+		}catch(e){}
+	}, 3000)
+
+
+	// 최초 호출 시 주소쿠키를 불러옵니다.
+	pastCookieData = getCookie(`identy`)
+	if(pastCookieData !== null)
+		try{window.armyWeather.private.identy = JSON.parse(pastCookieData)}catch(e){}
+
+	 // 3초마다 개인설정 쿠키저장
+	let priviousSavedIdenty = null
+	setInterval(()=>{
+		try{
+			let temp = JSON.stringify(window.armyWeather.private.identy)
+			if(priviousSavedIdenty == temp) return
+
+			setCookie(`identy`, temp)
+			priviousSavedIdenty = temp
+		}catch(e){}
+	}, 3000)
+
+	// 최초 호출 시 알람쿠키를 불러옵니다.
+	pastCookieData = getCookie(`alarm`)
+	if(pastCookieData !== null)
+		try{window.armyWeather.private.isAlarm = JSON.parse(pastCookieData)}catch(e){}
+
+	 // 3초마다 개인설정 쿠키저장
+	let priviousSavedAlarm = null
+	setInterval(()=>{
+		try{
+			let temp = JSON.stringify(window.armyWeather.private.isAlarm)
+			if(priviousSavedAlarm == temp) return
+
+			setCookie(`alarm`, temp)
+			priviousSavedAlarm = temp
 		}catch(e){}
 	}, 3000)
 }

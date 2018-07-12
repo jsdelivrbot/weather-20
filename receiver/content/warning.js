@@ -127,7 +127,7 @@ export class Warning{
 						try{
 							body = iconv.decode(body, 'EUC-KR').toString()
 						}catch(e){
-							Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`)
+							Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`, `[Backend:Warning]`)
 							console.log(body)
 						}
 
@@ -168,7 +168,7 @@ export class Warning{
 
 							// 변경된 값이 존재하는 경우
 							if(oldCheckSum != newCheckSum){
-								Logger.log(`기상청에서 ${dataName}을 받아왔습니다. (변경점 존재)`)
+								Logger.log(`기상청에서 ${dataName}을 받아왔습니다. (변경점 존재)`, `[Backend:Warning]`)
 
 								// 이미지 업데이트
 								self.imageUrls = []
@@ -194,11 +194,11 @@ export class Warning{
 								self.preCommandQueue = []
 								self.isLoaded = true
 								self.isLoading = false
-								Logger.log(`기상청에서 ${dataName}을 받아왔습니다. (변경점 없음)`)
+								Logger.log(`기상청에서 ${dataName}을 받아왔습니다. (변경점 없음)`, `[Backend:Warning]`)
 							}
 
 						}catch(e){
-							Logger.log(`기상청에서 받아온 ${dataName}을 해석하는데 실패했습니다.`)
+							Logger.log(`기상청에서 받아온 ${dataName}을 해석하는데 실패했습니다.`, `[Backend:Warning]`)
 							console.log(e)
 						}
 					})
@@ -209,7 +209,7 @@ export class Warning{
 				// 이미지주소가 없으면 그냥 넘기기
 				if(imageUrl.length == 0){
 					if(self.imageUrls.length == (pageNum+1)){
-						Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`)
+						Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`, `[Backend:Warning]`)
 
 						let dataSchema = {
 							timestamp: (new Date()).getTime(),
@@ -236,11 +236,11 @@ export class Warning{
 				}
 				let stream = request.get(imageUrl).pipe(fs.createWriteStream(path.join(process.cwd(), `/build/resources/gif/${dataId}_${pageNum}.gif`)))
 				stream.on('finish', ()=>{
-					Logger.log(`기상청에서 ${dataName} 이미지 정보를 받아왔습니다. (${pageNum+1}/${self.imageUrls.length})`)
+					Logger.log(`기상청에서 ${dataName} 이미지 정보를 받아왔습니다. (${pageNum+1}/${self.imageUrls.length})`, `[Backend:Warning]`)
 
 					// 만약 이번 처리가 마지막이면
 					if(self.imageUrls.length == (pageNum+1)){
-						Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`)
+						Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`, `[Backend:Warning]`)
 
 						let dataSchema = {
 							timestamp: (new Date()).getTime(),

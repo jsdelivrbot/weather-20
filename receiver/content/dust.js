@@ -28,19 +28,22 @@ rootDataUrl += `&numOfRows=10&pageSize=10&pageNo=1&startPage=1&InformCode=PM10`
 
 
 //dustStationData
-export function findStation(paramLat, paramLong, isNeedSubStation = false){
+export function findStation(paramLat, paramLong, isNeedSubStation = false, mainStationData = null){
 	let lat = Number(paramLat)
 	let long = Number(paramLong)
 
 	let foundedStationData = null
-	
+
 	let near = []
 	for(let dustStationData of dustStationDatas){
 		let coordDiff = 0
 		coordDiff += Math.abs(lat - dustStationData['x'])
 		coordDiff += Math.abs(long - dustStationData['y'])
 
-		
+		// 보조스테이션 정보 찾는데 메인스테이션 정보를 찾았으면 그 정보는 배제
+		if(isNeedSubStation && mainStationData !== null)
+			if(mainStationData.name == dustStationData.name)
+				continue
 
 		// 지원대상이 적으면 배제
 		if(dustStationData['supportTypes'].indexOf('PM10') == -1) continue
@@ -50,16 +53,25 @@ export function findStation(paramLat, paramLong, isNeedSubStation = false){
 		if(dustStationData['supportTypes'].indexOf('CO') == -1) continue
 		if(dustStationData['supportTypes'].indexOf('SO2') == -1) continue
 
-		// 측정소 위치가 교외지역이면 배제
-		if(isNeedSubStation && dustStationData['dataType'] == '교외대기') continue
+		// 보조 측정소 유형이 도기대기 측정소면 배제
+		// 도시대기 교외대기 중 선택가능
+
+		// TODO 나중에 Backup 으로 하나 더.... 추가..
+		// if(isNeedSubStation && dustStationData['dataType'] == '도시대기') continue
 
 		if(foundedStationData === null || foundedStationData.diff > coordDiff){
 			dustStationData.diff = coordDiff
 			foundedStationData = dustStationData
 		}
 	}
+
 	if(typeof foundedStationData['diff'] !== 'undefined')
 		delete foundedStationData['diff']
+
+	// mainStationData 정보를 찾아서 재계산 시도
+	if(isNeedSubStation && mainStationData == null)
+		return findStation(paramLat, paramLong, isNeedSubStation, foundedStationData)
+
 	return foundedStationData
 }
 
@@ -80,7 +92,10 @@ export function RequestRootData(database, callback){
 					// JSON 형태로 변환합니다.
 					parseString(body, (err, result) => {
 						if(result === undefined || result === null || typeof result['response'] === 'undefined' || typeof result.response.body[0].items[0]['item'] === 'undefined'){
-							console.log('데이터 획득실패')
+							Logger.log('데이터 획득실패', `[Backend:Dust-Global]`)
+							console.log(`Result:`, JSON.stringify(result, null, 2))
+							//console.log(`Body:`, body)
+							console.log(error)
 							return
 						}
 
@@ -110,7 +125,7 @@ export function RequestRootData(database, callback){
 							parsedRootDatas.push(parsedRootData)
 						}
 
-						Logger.log(`한국환경공단으로부터 전국 대기오염 예상 데이터를 받아왔습니다.`)
+						Logger.log(`한국환경공단으로부터 전국 대기오염 예상 데이터를 받아왔습니다.`, `[Backend:Dust-Global]`)
 
 						let dataSchema = {
 							timestamp: (new Date()).getTime(),
@@ -118,8 +133,8 @@ export function RequestRootData(database, callback){
 						}
 						database.metadata.set(`dust.root`, dataSchema)
 
-						if(typeof callback === 'function')
-							callback(parsedRootDatas)
+						//if(typeof callback === 'function')
+						//	callback(parsedRootDatas)
 					})
 				})
 				netHandle.on('error', (err) => {
@@ -128,15 +143,17 @@ export function RequestRootData(database, callback){
 
 			}catch(e){
 				// 확인할 수 없는 정보임을 클라이언트에 알립니다.
-				if(typeof callback === 'function')
-					callback(null)
+				//if(typeof callback === 'function')
+				//	callback(null)
 			}
-			return
 		}
 
 		let callbackData = null
-		if(typeof data['data'] != 'undefined')
+		if(data === null || data === undefined){
+			callbackData = null
+		}else if(typeof data['data'] != 'undefined'){
 			callbackData = data['data']
+		}
 		if(typeof callback === 'function')
 			callback(callbackData)
 	})
@@ -144,6 +161,7 @@ export function RequestRootData(database, callback){
 
 export function RequestStationData(database, paramLat, paramLong, callback, isNeedSubStation = false){
 	let station = findStation(paramLat, paramLong, isNeedSubStation)
+	let isSendedResponse = false
 	database.metadata.get(`dust.station.${station.name}`, (isSuccess, data)=>{
 
 		// 기존 데이터가 없는 경우 또는
@@ -156,17 +174,45 @@ export function RequestStationData(database, paramLat, paramLong, callback, isNe
 
 			let parsedDustStationData = []
 
+			// 3초 내외로 API에서 데이터를 못 얻어올 시
+			// 그냥 자체 정보 답신하거나 null 전송
+			setTimeout(()=>{
+				if(!isSendedResponse){
+					isSendedResponse = true
+					let callbackData = null
+					if(data === null || data === undefined){
+						callbackData = null
+					}else if(typeof data['data'] != 'undefined'){
+						callbackData = data['data']
+					}
+					if(typeof callback === 'function')
+						callback(callbackData)
+				}
+			}, 3000)
+			
 			try{
 				// 기상청에서 해당 지역 데이터를 받아옵니다.
 				request(`${liveDataUrl}&stationName=${encodeURIComponent(station.name)}`, (error, response, body) => {
 
 					// JSON 형태로 변환합니다.
 					parseString(body, (err, result) => {
-						if(result === null || result === undefined || typeof result['response'] === 'undefined' || typeof result.response.body[0].items[0]['item'] === 'undefined'){
-							console.log('데이터 획득실패')
+						if(result === null || result === undefined || typeof result['response'] === 'undefined'){
+							Logger.log(`${station.name} 관측소 데이터 획득실패`, `[Backend:Dust-Station]`)
+							console.log(`Result:`, JSON.stringify(result, null, 2))
+							console.log(error)
 							return
 						}
-						Logger.log(`한국환경공단으로부터 ${station.name}(${station.x}, ${station.y}) 측정소 대기오염 데이터를 받아왔습니다.`)
+						try{
+							if(typeof result.response.body[0].items[0]['item'] === 'undefined'){
+								Logger.log(`${station.name} 관측소 데이터 획득실패`, `[Backend:Dust-Station]`)
+								console.log(`Result:`, JSON.stringify(result, null, 2))
+								console.log(error)
+							}
+						}catch(e){
+							Logger.log(`${station.name} 관측소 데이터 획득실패`, `[Backend:Dust-Station]`)
+							console.log(`Result:`, JSON.stringify(result, null, 2))
+						}
+						Logger.log(`한국환경공단으로부터 ${station.name}(${station.x}, ${station.y}) 측정소 대기오염 데이터를 받아왔습니다.`, `[Backend:Dust-Station]`)
 
 						for(let item of result.response.body[0].items[0].item){
 							let itemData = {
@@ -209,26 +255,35 @@ export function RequestStationData(database, paramLat, paramLong, callback, isNe
 							data: parsedDustStationData
 						}
 						database.metadata.set(`dust.station.${station.name}`, dataSchema)
-						//database.metadata.set(`dust.station.${station.name}`, parsedDustStationData)
 
-						if(typeof callback === 'function')
+						if(!isSendedResponse && typeof callback === 'function'){
+							isSendedResponse = true
 							callback(parsedDustStationData)
+						}
 					})
 				})
 
 			}catch(e){
 				// 확인할 수 없는 정보임을 클라이언트에 알립니다.
-				if(typeof callback === 'function')
+				if(!isSendedResponse && typeof callback === 'function'){
+					isSendedResponse = true
 					callback(null)
+				}
 			}
 			return
 		}
 
-		let callbackData = null
-		if(typeof data['data'] != 'undefined')
-			callbackData = data['data']
-		if(typeof callback === 'function')
-			callback(callbackData)
+		if(!isSendedResponse){
+			isSendedResponse = true
+			let callbackData = null
+			if(data === null || data === undefined){
+				callbackData = null
+			}else if(typeof data['data'] != 'undefined'){
+				callbackData = data['data']
+			}
+			if(typeof callback === 'function')
+				callback(callbackData)
+		}
 	})
 }
 

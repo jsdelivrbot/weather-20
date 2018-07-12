@@ -20,8 +20,11 @@ export function LightCalculate(paramDate, paramLat, paramLong, paramUtc, paramFo
 	let moonTimeData = SunCalc.getMoonTimes(paramDate, paramLat, paramLong)
 	let sunRise = faultCheck(moment(sunTimeData.dawn).utcOffset(paramUtc).format(localSimpleFormat[0]))
 	let sunSet = faultCheck(moment(sunTimeData.dusk).utcOffset(paramUtc).format(localSimpleFormat[0]))
+	
 	let moonRise = faultCheck(moment(moonTimeData.rise).utcOffset(paramUtc).format(localSimpleFormat[0]))
 	let moonSet = faultCheck(moment(moonTimeData.set).utcOffset(paramUtc).format(localSimpleFormat[0]))
+	if(typeof moonTimeData['rise'] == 'undefined') moonRise = '--:--'
+	if(typeof moonTimeData['set'] == 'undefined') moonSet = '--:--'
 
 	let sunPosData = SunCalc.getPosition(paramDate, paramLat, paramLong)
 	let sunAltitude = (sunPosData.altitude * (180 / Math.PI)).toFixed(2)
@@ -32,16 +35,23 @@ export function LightCalculate(paramDate, paramLat, paramLong, paramUtc, paramFo
 	let moonAzimuth = (moonPosData.azimuth * (180 / Math.PI)).toFixed(2)
 
 
-	let midnight = new Date(moment(Number(paramDate)).utcOffset(paramUtc).add(1, 'days').hour(0).minute(0))
+	let midnight = new Date(moment(Number(paramDate)).utcOffset(paramUtc).add(0, 'days').hour(0).minute(0))
+	let pastMidnight = new Date(moment(Number(paramDate)).utcOffset(paramUtc).add(1, 'days').hour(0).minute(0))
 
 	let dailyData = Lune.phase(paramDate)
 	let monthlyData = Lune.phase_hunt(paramDate)
-	let midnightData = Lune.phase(midnight)
 
 	let moonLightPercentage = Number((dailyData.illuminated*100).toFixed(2))
 	let moonLightLux = (0.27*dailyData.illuminated).toFixed(4)
+
+	let midnightData = Lune.phase(midnight)
 	let moonActualLightPercentage = Number((midnightData.illuminated*100).toFixed(2))
 	let moonActualLightLux = (0.27*midnightData.illuminated).toFixed(4)
+
+	let pastMidnightData = Lune.phase(pastMidnight)
+	let pastMoonActualLightPercentage = Number((pastMidnightData.illuminated*100).toFixed(2))
+	let pastMoonActualLightLux = (0.27*pastMidnightData.illuminated).toFixed(4)
+	
 	let moonPhasePercentage = Number((dailyData.phase*100).toFixed(2))
 	let moonPhaseActualPercentage = 0
 	let moonPhaseDescription = ''
@@ -51,7 +61,7 @@ export function LightCalculate(paramDate, paramLat, paramLong, paramUtc, paramFo
 		moonPhaseDescription = '초승달'
 	} else if(25 < moonPhasePercentage && moonPhasePercentage <= 55){
 		moonPhaseActualPercentage = (moonPhasePercentage-25)/30*100
-		moonPhaseDescription = '반달'
+		moonPhaseDescription = '상현달'
 	} else if(55 < moonPhasePercentage && moonPhasePercentage <= 75){
 		moonPhaseActualPercentage = (moonPhasePercentage-55)/20*100
 		moonPhaseDescription = '보름달'
@@ -63,7 +73,7 @@ export function LightCalculate(paramDate, paramLat, paramLong, paramUtc, paramFo
 			moonPhaseActualPercentage = (moonPhasePercentage+5)/10*100
 		else
 			moonPhaseActualPercentage = (moonPhasePercentage-95)/10*100
-		moonPhaseDescription = '삭'
+		moonPhaseDescription = '하현달'
 	}
 
 	moonPhaseActualPercentage = Number(moonPhaseActualPercentage.toFixed(0))
@@ -90,11 +100,15 @@ export function LightCalculate(paramDate, paramLat, paramLong, paramUtc, paramFo
 		moonActualLightLux,
 
 		moonPhaseDescription,
+		moonPhasePercentage,
 		moonPhaseActualPercentage,
+		
+		pastMoonActualLightPercentage,
+		pastMoonActualLightLux,
 
 		recentNewMoonDate: moment(Number(monthlyData.new_date)).utcOffset(paramUtc).format(localSimpleFormat[1]),
 		recentFullMoonDate: moment(Number(monthlyData.full_date)).utcOffset(paramUtc).format(paramFormat),
-		nextNewMoonDate: moment(Number(monthlyData.nextnew_date)).utcOffset(paramUtc).format(localSimpleFormat[1])
+		nextNewMoonDate: moment(Number(monthlyData.nextnew_date)).add(-2, 'days').utcOffset(paramUtc).format(localSimpleFormat[1])
 	}
 }
 

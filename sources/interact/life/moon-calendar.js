@@ -47,6 +47,8 @@ let calendarInstance = new Calendar(targetCalendar, function (){
 			let lightData = getLightData(currentDateObj)
 			let BMNT = `${lightData.moonRise}`
 			let EENT = `${lightData.moonSet}`
+			//if(lightData.alwaysUp) moonRise = '--:--'
+			//if(moonTimeData.alwaysDown) moonSet = '--:--'
 
 			// 오늘 또는 안 먹은 날 또는 마신 날
 			classData += (dayData.isToday) ? 'today ' : 'notrunnedday '
@@ -99,7 +101,7 @@ let calendarTodayProcess = (dayData, tempDiv)=> {
 	}
 
 	// 날짜 반영 후 색상 변경
-	tempDiv.firstChild.style.background = '#a55697'
+	tempDiv.firstChild.style.background = '#67a9b5'
 	tempDiv.firstChild.style.borderColor = '#fff'
 	tempDiv.firstChild.style.borderStyle = 'solid'
 	tempDiv.firstChild.style.borderWidth = '3'

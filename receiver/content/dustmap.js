@@ -13,7 +13,7 @@ import pngFileStream from 'png-file-stream'
 let utc = '+0900'
 import path from 'path'
 
-export class DustMap{
+export class DustMap {
 	constructor(app, database, option={}){
 		this.isLoaded = false
 		this.isLoading = false
@@ -104,7 +104,7 @@ export class DustMap{
 						}
 					} , (err, response, body)=>{
 						body = String(body)
-						Logger.log(`한국환경공단에서 ${dataName} 지도화용 목록정보를 받아왔습니다.`)
+						Logger.log(`한국환경공단에서 ${dataName} 지도화용 목록정보를 받아왔습니다.`, `[Backend:DustMap]`)
 						//console.log(body)
 
 						try{
@@ -124,7 +124,7 @@ export class DustMap{
 							self.update(dataId, dataName, repeatDelay,
 										database, callback, 0, fullData)
 						}catch(e){
-							Logger.log(`한국환경공단에서 받아온 ${dataName} 지도화용 목록정보를 해석하는데 실패했습니다.`)
+							Logger.log(`한국환경공단에서 받아온 ${dataName} 지도화용 목록정보를 해석하는데 실패했습니다.`, `[Backend:DustMap]`)
 							console.log(e)
 						}
 					})
@@ -133,6 +133,9 @@ export class DustMap{
 
 				let processUrl = self.pageUrls[pageNum]
 				//Logger.log(`processUrl: ${processUrl}`)
+				if(processUrl === undefined || processUrl == null)
+					return
+					
 				let stream = request.get({
 					url: processUrl,
 					headers: {
@@ -143,10 +146,10 @@ export class DustMap{
 				}).pipe(fs.createWriteStream(path.join(process.cwd(), `/build/resources/gif/${dataId}_${pageNum}.gif`)))
 
 				stream.on('finish', ()=>{
-					Logger.log(`한국환경공단에서 ${dataName} 이미지를 받아왔습니다. (${pageNum+1}/${self.pageUrls.length})`)
+					Logger.log(`한국환경공단에서 ${dataName} 이미지를 받아왔습니다. (${pageNum+1}/${self.pageUrls.length})`, `[Backend:DustMap]`)
 
 					if(self.pageUrls.length == (pageNum+1)){
-						Logger.log(`한국환경공단에서 ${dataName} 이미지를 모두 받아왔습니다.`)
+						Logger.log(`한국환경공단에서 ${dataName} 이미지를 모두 받아왔습니다.`, `[Backend:DustMap]`)
 						let dataSchema = {
 							timestamp: (new Date()).getTime(),
 							pageUrls: self.pageUrls,

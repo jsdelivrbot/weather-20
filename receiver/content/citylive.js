@@ -245,7 +245,7 @@ export class CityLive{
 						body = iconv.decode(body, 'EUC-KR').toString()
 						if(body == null || body == undefined || typeof body != 'string') throw new Error()
 					}catch(e){
-						Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`)
+						Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`, `[Backend:CITYLive]`)
 						console.log(body)
 						return
 					}
@@ -293,7 +293,7 @@ export class CityLive{
 							parsedDataSheets[stationName] = parsedDataSheet
 						}
 
-						Logger.log(`기상청에서 ${dataName}를 받아왔습니다. 좌표확인된정보:${dataSheets.length}개`)
+						Logger.log(`기상청에서 ${dataName}를 받아왔습니다. 좌표확인된정보:${dataSheets.length}개`, `[Backend:CITYLive]`)
 
 						let dataSchema = {
 							timestamp: (new Date()).getTime(),
@@ -301,7 +301,7 @@ export class CityLive{
 						}
 						database.metadata.set(`citylive.${dataId}`, dataSchema)
 					}catch(e){
-						Logger.log(`기상청에서 받아온 ${dataName}를 해석하는데 실패했습니다.`)
+						Logger.log(`기상청에서 받아온 ${dataName}를 해석하는데 실패했습니다.`, `[Backend:CITYLive]`)
 						//console.log(e)
 					}
 				})
@@ -329,6 +329,6 @@ export function File(app, database) {
 		listPath,
 		dataName: `전국 도시관측소 시정정보`,
 		dataId: `citylive`,
-		repeatDelay: 5000
+		repeatDelay: 10000
 	})
 }

@@ -16,9 +16,6 @@ import path from 'path'
 let isGlobalUpdateQueueRunning = false
 let globalUpdateQueue = []
 
-// TODO
-// private_data/image 폴더생성
-
 // 생활지수 정보 크롤러
 export class Map{
 	constructor(app, database, option={}){
@@ -61,11 +58,11 @@ export class Map{
 			clearInterval(self.intervalHandle)
 
 		this.intervalHandle = setInterval(()=>{
-			if(self.isLoaded || self.isLoading) return
+			if(self.isLoading) return
 			self.isLoading = true
 			
 			if(!isGlobalUpdateQueueRunning){
-				isGlobalUpdateQueueRunning = true
+				//isGlobalUpdateQueueRunning = true
 				self.update(option.dataId, option.dataName, option.repeatDelay, self.database)
 			}else{
 				globalUpdateQueue.push(()=>{
@@ -116,7 +113,7 @@ export class Map{
 
 					}, (err, response, body)=>{
 						body = String(body)
-						Logger.log(`기상청에서 ${dataName} 지도화용 목록정보를 받아왔습니다.`)
+						Logger.log(`기상청에서 ${dataName} 지도화용 목록정보를 받아왔습니다.`, `[Backend:Map]`)
 
 						try{
 							let fcttype = body.split(`var fcttype = '`)[1].split(`';`)[0]
@@ -139,8 +136,10 @@ export class Map{
 							self.update(dataId, dataName, repeatDelay,
 										database, callback, 0, fullData, type)
 						}catch(e){
-							Logger.log(`기상청에서 받아온 ${dataName} 지도화용 목록정보를 해석하는데 실패했습니다.`)
+							Logger.log(`기상청에서 받아온 ${dataName} 지도화용 목록정보를 해석하는데 실패했습니다.`, `[Backend:Map]`)
 							console.log(e)
+							console.log('전문:')
+							console.log(body)
 						}
 					})
 					return
@@ -157,7 +156,7 @@ export class Map{
 					}, (err, response, body)=>{
 						body = String(body)
 
-						Logger.log(`기상청에서 ${dataName} 페이지 정보를 받아왔습니다. (${pageNum+1}/${self.pageUrls.length})`)
+						Logger.log(`기상청에서 ${dataName} 페이지 정보를 받아왔습니다. (${pageNum+1}/${self.pageUrls.length})`, `[Backend:Map]`)
 						//console.log(`body length: ${body.length}`)
 						//console.log(`body: ${body}`)
 
@@ -166,7 +165,7 @@ export class Map{
 						try{
 						imageUrl = `http://www.weather.go.kr/img/dfs/` + body.split(`/img/dfs/`)[1].split(`' border=0`)[0]
 						}catch(e){
-							Logger.log(`${dataName} 페이지정보 획득 중 (${pageNum+1}/${self.pageUrls.length}) 번째 페이지에서 알 수 없는 값을 받았습니다.`)
+							Logger.log(`${dataName} 페이지정보 획득 중 (${pageNum+1}/${self.pageUrls.length}) 번째 페이지에서 알 수 없는 값을 받았습니다.`, `[Backend:Map]`)
 							console.log(body)
 						}
 						if(imageUrl !== null)
@@ -174,7 +173,7 @@ export class Map{
 
 						// 만약 이번 처리가 마지막이면
 						if(self.pageUrls.length == (pageNum+1)){
-							Logger.log(`기상청에서 ${dataName} 페이지 정보를 모두 받아왔습니다.`)
+							Logger.log(`기상청에서 ${dataName} 페이지 정보를 모두 받아왔습니다.`, `[Backend:Map]`)
 
 							self.update(dataId, dataName, repeatDelay,
 										database, callback, 0, fullData, 'img')
@@ -211,12 +210,12 @@ export class Map{
 						if(pageNumGIF.length == 1) pageNumGIF = `0${pageNumGIF}`
 						let stream = this.pack().pipe(fs.createWriteStream(`./private_data/image/${dataId}_${pageNumGIF}.png`))
 						stream.on('finish', ()=>{
-							Logger.log(`기상청에서 ${dataName} 이미지 정보를 받아왔습니다. (${pageNum+1}/${self.imageUrls.length})`)
+							Logger.log(`기상청에서 ${dataName} 이미지 정보를 받아왔습니다. (${pageNum+1}/${self.imageUrls.length})`, `[Backend:Map]`)
 
 							// 만약 이번 처리가 마지막이면
 							if(self.imageUrls.length == (pageNum+1)){
-								Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`)
-									Logger.log(`${dataName} 이미지 ${self.imageUrls.length}개를 GIF화 진행 중...`)
+								Logger.log(`기상청에서 ${dataName} 이미지 ${self.imageUrls.length}개를 모두 받아왔습니다.`, `[Backend:Map]`)
+								Logger.log(`${dataName} 이미지 ${self.imageUrls.length}개를 GIF화 진행 중...`, `[Backend:Map]`)
 
 								//GIF 렌더링 시작
 								let encoder = new GIFEncoder(536, 877)
@@ -226,14 +225,16 @@ export class Map{
 									.pipe(fs.createWriteStream(path.join(process.cwd(), `/build/resources/gif/${dataId}.gif`)))
 
 								gifWriteStream.on('finish', ()=>{
-									Logger.log(`${dataName} 이미지 ${self.imageUrls.length}개를 GIF화 완료했습니다.`)
+									Logger.log(`${dataName} 이미지 ${self.imageUrls.length}개를 GIF화 완료했습니다.`, `[Backend:Map]`)
 
 									let dataSchema = {
 										timestamp: (new Date()).getTime(),
 										link: path.join(process.cwd(), `/build/resources/gif/${dataId}.gif`)
 									}
 									database.metadata.set(`mapdata.${dataId}`, dataSchema)
-									
+									self.isLoaded = true
+									self.isLoading = false
+
 									// 모든 글로벌 업데이트가 끝났다면
 									if(globalUpdateQueue.length == 0){
 										isGlobalUpdateQueueRunning = false
@@ -256,7 +257,9 @@ export class Map{
 						
 					})
 				}
-				return
+			}else{
+				self.isLoaded = true
+				self.isLoading = false
 			}
 
 			// 입력되어 있는 날씨 값을 콜백에 전달합니다.
@@ -268,8 +271,6 @@ export class Map{
 					preCommand(data)
 
 			self.preCommandQueue = []
-			self.isLoaded = true
-			self.isLoading = false
 		})
 	}
 }
@@ -286,7 +287,7 @@ export function Temp(app, database) {
 		dataId: `temp`,
 		updateHour: 7,
 		gifDelay: 5000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -298,7 +299,7 @@ export function TempMax(app, database) {
 		dataId: `tempmax`,
 		updateHour: 7,
 		gifDelay: 1000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -310,6 +311,7 @@ export function RainAmount(app, database) {
 		dataId: `rainamount`,
 		updateHour: 7,
 		gifDelay: 5000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -321,7 +323,7 @@ export function Rain(app, database) {
 		dataId: `rain`,
 		updateHour: 7,
 		gifDelay: 5000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -333,7 +335,7 @@ export function Sky(app, database) {
 		dataId: `sky`,
 		updateHour: 7,
 		gifDelay: 5000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -345,7 +347,7 @@ export function Wave(app, database) {
 		dataId: `wave`,
 		updateHour: 7,
 		gifDelay: 5000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }
 
@@ -357,6 +359,6 @@ export function Humidity(app, database) {
 		dataId: `humidity`,
 		updateHour: 7,
 		gifDelay: 5000,
-		repeatDelay: 1000,
+		repeatDelay: 5000,
 	})
 }

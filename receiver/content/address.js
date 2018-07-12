@@ -116,7 +116,6 @@ export default function Address(app, database) {
 			data: foundedData})
 		response.end()
 	})
-
 }
 
 function getByPath(obj, value) {

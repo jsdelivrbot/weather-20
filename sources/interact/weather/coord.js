@@ -152,9 +152,11 @@ let applyProcess = ()=>{
 	// 자정대 달 밝기예측
 	//document.getElementById('day-moon-info4').innerHTML = `${lightData.moonActualLightPercentage.toFixed(0)}%`
 	document.getElementById('day-weather-moon-set-info2').innerHTML = `${lightData.moonActualLightPercentage.toFixed(0)}%`
+	document.getElementById('day-weather-moon-set-info2').innerHTML = `${lightData.pastMoonActualLightPercentage.toFixed(0)}%`
 	
 	// 실시간 달 위상예측
 	//document.getElementById('day-moon-info6').innerHTML = `${lightData.moonPhaseDescription} (${lightData.moonPhaseActualPercentage}% 차오름)`
+	document.getElementById(`day-weather-moon-set-info5`).innerHTML = `(${lightData.moonPhaseDescription})`
 
 	// 최근 만월예측
 	// document.getElementById('day-weather-moon-set-info5').innerHTML = `최근 만월예측: ${lightData.recentFullMoonDate}`

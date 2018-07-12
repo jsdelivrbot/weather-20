@@ -105,7 +105,7 @@ class Flick {
 			targets: particules,
 			x: (p) => { return p.endPos.x },
 			y: (p) => { return p.endPos.y },
-			radius: 0.1,
+			radius: 0.01,
 			duration: (!isSlow) ? anime.random(1200, 1800):  anime.random(3000, 3500),
 			easing: 'easeOutExpo',
 			update: self.renderParticule

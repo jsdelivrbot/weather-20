@@ -41,7 +41,7 @@ export default class Metadata {
 			isOpenedFiles[this.fullPath].initCount++
 			return isOpenedFiles[this.fullPath]
 		}
-		
+
 		// 여러 곳에서 호출되고 있는 경우
 		// 호출된 모든 곳에서 닫힐 때까지
 		// 해당 인스턴스를 닫지 않고 유지합니다.

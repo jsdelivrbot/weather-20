@@ -96,7 +96,7 @@ export function RequestMonthlyWeatherData(database, callback){
 					}, (error, response, body) => {
 
 					if(body === undefined){
-						console.log('신규 포멧 형태 받음')
+						Logger.log('데이터 획득실패', `[Backend:Weather]`)
 						return
 					}
 
@@ -112,7 +112,7 @@ export function RequestMonthlyWeatherData(database, callback){
 						body = iconv.decode(body, 'EUC-KR').toString()
 
 						parseString(body, (err, result) => {
-							Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아왔습니다.`)
+							Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아왔습니다.`, `[Backend:Weather]`)
 
 							try{
 								// 순서를 재구성합니다.
@@ -251,7 +251,7 @@ export function RequestMonthlyWeatherData(database, callback){
 								}
 								database.metadata.set(`weather.global`, monthlyDataSchema)
 							}catch(e){
-								Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아오는데 실패했습니다`)
+								Logger.log(`기상청에서 한달치 전국 기상예보 데이터를 받아오는데 실패했습니다`, `[Backend:Weather]`)
 								console.log(body)
 								console.log(e)
 							}
@@ -288,7 +288,7 @@ export function RequestWeeklyWeatherData(database, callback, paramX, paramY){
 					}, (error, response, body) => {
 
 					if(body === undefined){
-						console.log('receiver/content/weather.js/RequestWeeklyWeatherData 에서 신규 포멧 형태 받음')
+						Logger.log('receiver/content/weather.js/RequestWeeklyWeatherData 에서 신규 포멧 형태 받음', `[Backend:Weather]`)
 
 						// null 값을 콜백에 전달합니다.
 						if(typeof callback === 'function')
@@ -312,7 +312,7 @@ export function RequestWeeklyWeatherData(database, callback, paramX, paramY){
 							//body = iconv.decode(body, 'EUC-KR').toString()
 
 							parseString(body, (err, result) => {
-								Logger.log(`기상청에서 주간 ${localRssCode[0]}(+전국) 기상예보 데이터를 받아왔습니다.`)
+								Logger.log(`기상청에서 주간 ${localRssCode[0]}(+전국) 기상예보 데이터를 받아왔습니다.`, `[Backend:Weather]`)
 
 								// 순서를 재구성합니다.
 								let weeklyForeCast = {
@@ -350,7 +350,9 @@ export function RequestWeeklyWeatherData(database, callback, paramX, paramY){
 						})
 					})
 				})
-			}catch(e){}
+			}catch(e){
+				console.log(e)
+			}
 			return
 		}
 
@@ -369,7 +371,7 @@ export function RequestLiveWeatherData(database, cellNumber, callback){
 			let isNeedToUpdate = !isSuccess || data === null ||
 			  (typeof data === 'object'
 			   && typeof data['timestamp'] !== 'undefined'
-			   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().get('hour'))
+			   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().add(-10, 'minute').get('hour'))
 
 			if(isNeedToUpdate){
 
@@ -395,57 +397,76 @@ export function RequestLiveWeatherData(database, cellNumber, callback){
 						rejectUnauthorized: false
 
 					}, (error, response, body) => {
+
 						let liveData  = null
 						try{ liveData = JSON.parse(body) }catch(e){}
 
 						let parsedData = {}
 						if(liveData === null || liveData === undefined){
+							Logger.log(`기상청에서 실시간 전국 기상예보 데이터를 받아오는데 실패했습니다.`, `[Backend:Weather]`)
+							if(typeof callback === 'function')
+								callback(null)
 							return
 						}
 
-						for(let itemIndex in liveData.response.body.items.item){
-							let item = liveData.response.body.items.item[itemIndex]
-							switch(item.category){
-								case 'LGT':
-									parsedData.lightning = item
-									break
-								case 'PTY':
-									parsedData.weather = item
-									break
-								case 'REH':
-									parsedData.humidity = item
-									break
-								case 'RN1':
-									parsedData.rainAmountAfter1Hour = item
-									break
-								case 'SKY':
-									parsedData.cloud = item
-									break
-								case 'T1H':
-									parsedData.temp = item
-									break
-								case 'UUU':
-									parsedData.uuu = item
-									break
-								case 'VVV':
-									parsedData.vvv = item
-									break
-								case 'VEC':
-									parsedData.windDirection = item
-									break
-								case 'WSD':
-									parsedData.windSpeed = item
-									break
+						try{
+							for(let itemIndex in liveData.response.body.items.item){
+								let item = liveData.response.body.items.item[itemIndex]
+								switch(item.category){
+									case 'LGT':
+										parsedData.lightning = item
+										break
+									case 'PTY':
+										parsedData.weather = item
+										break
+									case 'REH':
+										parsedData.humidity = item
+										break
+									case 'RN1':
+										parsedData.rainAmountAfter1Hour = item
+										break
+									case 'SKY':
+										parsedData.cloud = item
+										break
+									case 'T1H':
+										parsedData.temp = item
+										break
+									case 'UUU':
+										parsedData.uuu = item
+										break
+									case 'VVV':
+										parsedData.vvv = item
+										break
+									case 'VEC':
+										parsedData.windDirection = item
+										break
+									case 'WSD':
+										parsedData.windSpeed = item
+										break
+								}
+
 							}
-							
+							let liveDataSchema = {
+								timestamp: (new Date()).getTime(),
+								data: parsedData
+							}
+							database.metadata.set(`weather.live.${cellNumber}`, liveDataSchema)
+							Logger.log(`기상청에서 실시간 전국 기상예보 데이터를 받아왔습니다. ${cellNumber}(X:${Nx} Y:${Ny})`, `[Backend:Weather]`)
+
+							if(typeof callback === 'function')
+								callback(liveDataSchema)
+
+						}catch(e){
+							Logger.log(`기상청에서 받아온 실시간 전국 기상예보 데이터를 해석하는데 실패했습니다.`, `[Backend:Weather]`)
+							if(liveDataSchema !== undefined && liveDataSchema !== null){
+								try{
+									if(liveDataSchema.response.header.resultMsg.indexOf(`LIMITED`) !== -1)
+										Logger.log('[주의] 기상청 API 호출량 사용 한계 초과로 인한 요청 거부 감지됨', `[Backend:Weather]`)
+								}catch(e){}
+							}
+							if(typeof callback === 'function')
+								callback(null)
 						}
-						let liveDataSchema = {
-							timestamp: (new Date()).getTime(),
-							data: parsedData
-						}
-						database.metadata.set(`weather.live.${cellNumber}`, liveDataSchema)
-						if(typeof callback === 'function')
-							callback(liveDataSchema)
 					})
 				}, true)
 
@@ -467,7 +488,7 @@ export function RequestWeatherData(database, cellNumber, callback, isLazyLoad = 
 		let isNeedToUpdate = !isSuccess || data === null ||
 		  (typeof data === 'object'
 		   && typeof data['timestamp'] !== 'undefined'
-		   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().get('hour'))
+		   && moment(Number(data['timestamp'])).add(-10, 'minute').get('hour') != moment().add(-10, 'minute').get('hour'))
 
 		if(isNeedToUpdate){
 
@@ -477,7 +498,7 @@ export function RequestWeatherData(database, cellNumber, callback, isLazyLoad = 
 
 					// JSON 형태로 변환합니다.
 					parseString(body, (err, result) => {
-						Logger.log(`기상청에서 ${result.rss.channel[0].item[0].category[0]}(${cellNumber}) 지역 기상 데이터를 받아왔습니다.`)
+						Logger.log(`기상청에서 ${result.rss.channel[0].item[0].category[0]}(${cellNumber}) 지역 기상 데이터를 받아왔습니다.`, `[Backend:Weather]`)
 
 						// 순서를 재구성합니다.
 						let dailyForeCast = {
@@ -533,7 +554,9 @@ export function RequestWeatherData(database, cellNumber, callback, isLazyLoad = 
 					})
 				})
 				
-			}catch(e){}
+			}catch(e){
+				console.log(e)
+			}
 		}
 
 		// 입력되어 있는 날씨 값을 콜백에 전달합니다.
@@ -584,7 +607,7 @@ export default function Weather(app, database) {
 	app.post(`/api/weather`, (request, response)=>{
 		let requestSchema = request.body
 		if(requestSchema === undefined || requestSchema === null) {
-			Logger.log(`잘못된 유형의 ${this.option.dataName} 발생`)
+			Logger.log(`잘못된 유형의 ${this.option.dataName} 발생`, `[Backend:Weather]`)
 			response.send(null)
 			response.end()
 			return

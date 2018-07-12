@@ -112,7 +112,7 @@ let calendarTodayProcess = (dayData, tempDiv)=> {
 	}
 
 	// 날짜 반영 후 색상 변경
-	tempDiv.firstChild.style.background = '#a55697'
+	tempDiv.firstChild.style.background = '#67a9b5'
 	tempDiv.firstChild.style.borderColor = '#fff'
 	tempDiv.firstChild.style.borderStyle = 'solid'
 	tempDiv.firstChild.style.borderWidth = '3'

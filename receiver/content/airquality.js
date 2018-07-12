@@ -151,19 +151,20 @@ export class AirQuality{
 
 				let processUrl = self.pageUrls[pageNum]
 				//Logger.log(`processUrl: ${processUrl}`)
+				Logger.log(`안양대 기후융합연구소에서 ${dataName}를 받아오는 중.... (${pageNum+1}/${self.pageUrls.length})`, `[Backend:AirQuality]`)
 				let stream = request.get(processUrl).pipe(fs.createWriteStream(path.join(process.cwd(), `/build/resources/gif/${dataId}_${pageNum}.gif`)))
 				stream.on('finish', ()=>{
 					Logger.log(`안양대 기후융합연구소에서 ${dataName}를 받아왔습니다. (${pageNum+1}/${self.pageUrls.length})`)
 
 					if(self.pageUrls.length == (pageNum+1)){
-						Logger.log(`안양대 기후융합연구소에서 받아온 ${dataName} 상 이미지 내 분포 값 해석중...`)
+						Logger.log(`안양대 기후융합연구소에서 받아온 ${dataName} 상 이미지 내 분포 값 해석중...`, `[Backend:AirQuality]`)
 
 						for(let imgIndex in self.pageUrls){
 							imgIndex = Number(imgIndex)
 
 							let imgBuffer = fs.readFileSync(path.join(process.cwd(), `/build/resources/gif/${dataId}_${imgIndex}.gif`))
 							getPixels(imgBuffer, 'image/gif', (error, pixels) => {
-								Logger.log(`안양대 기후융합연구소에서 받아온 ${dataName} 상 이미지 내 분포 값 해석중... (${imgIndex+1}/${self.pageUrls.length})`)
+								Logger.log(`안양대 기후융합연구소에서 받아온 ${dataName} 상 이미지 내 분포 값 해석중... (${imgIndex+1}/${self.pageUrls.length})`, `[Backend:AirQuality]`)
 								if (error) throw error
 								let warnDotCount = 0
 								let mapLoop = 0
@@ -202,7 +203,7 @@ export class AirQuality{
 								}
 								self.graph.push(warnDotCount)
 								if(self.pageUrls.length == (imgIndex+1)){
-									Logger.log(`안양대 기후융합연구소에서 ${dataName}를 성공적으로 받아왔습니다.`)
+									Logger.log(`안양대 기후융합연구소에서 ${dataName}를 성공적으로 받아왔습니다.`, `[Backend:AirQuality]`)
 									let dataSchema = {
 										timestamp: (new Date()).getTime(),
 										graph: self.graph,
@@ -237,7 +238,7 @@ export class AirQuality{
 	}
 }
 
-let listPath = `http://kaq.or.kr/result/result_01.asp`
+let listPath = `https://kaq.or.kr/result/result_01.asp`
 //let listPath = `https://www.naver.com`
 
 export function File(app, database) {

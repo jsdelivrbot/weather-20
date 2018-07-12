@@ -11,9 +11,9 @@ var effects = {
 
 var colorTheme = {
 	cloud: {
-		main: 'rgba(23, 23, 23, 0.43)',
+		main: '#000000ad',
 		sub: '#515c63',
-		border: 'rgba(23, 23, 23, 0.43)',
+		border: 'rgba(78, 78, 78, 0.68)',
 		fill: 'rgb(81, 92, 99)',
 		background: '#FFFFFF'
 	},
@@ -59,6 +59,7 @@ var loginIdInput = null
 var loginPwInput = null
 
 var addressQuestion = null
+var manageQuestion = null
 
 var selectedItem = null
 var menuBars = null
@@ -98,6 +99,7 @@ export function ThemeInit(){
 	loginPwInput = document.getElementById('login-question-pw-input')
 
 	addressQuestion = document.getElementById('address-question')
+	manageQuestion = document.getElementById('manage-question')
 }
 
 
@@ -124,6 +126,7 @@ export function applyColorTheme (color, custom){
 	let isActivatedRegisterQuestion = false
 	let isActivatedHeatQuestion = false
 	let isActivatedAddressQuestion = false
+	let isActivatedManageQuestion = false
 
 	// 활성화 된 메뉴 가져오기
 	selectedItem = document.querySelector('.menu-item-selected')
@@ -148,6 +151,10 @@ export function applyColorTheme (color, custom){
 	try {
 		isActivatedAddressQuestion =
 			window.getComputedStyle(addressQuestion).display != 'none'
+	}catch(e) {}
+	try {
+		isActivatedManageQuestion =
+			window.getComputedStyle(manageQuestion).display != 'none'
 	}catch(e) {}
 
 	
@@ -198,7 +205,7 @@ export function applyColorTheme (color, custom){
 	// 메뉴 색상 변경
 	if(selectedItem != null){
 		selectedItem.style.color = backgroundColor
-		selectedItem.style.background = mainColor
+		selectedItem.style.background = 'rgba(78, 78, 78, 0.68)'
 	}
 
 	for(let menuBar of menuBars)
@@ -258,5 +265,8 @@ export function applyColorTheme (color, custom){
 
 	if(isActivatedAddressQuestion){
 		addressQuestion.style.background = subColor
+	}
+	if(isActivatedManageQuestion){
+		manageQuestion.style.background = subColor
 	}
 }

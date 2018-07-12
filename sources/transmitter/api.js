@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 // 선언과 동시에 REST API 인스턴스 생성
 let rest = null
 let routeDomain = null
@@ -8,6 +10,10 @@ export default class API {
 		if(typeof location != 'undefined')
 			return location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '')
 		return null
+	}
+
+	static hash(passcode, callback) {
+		return crypto.createHash('sha256').update(passcode).digest('base64')
 	}
 	
 	static setDomain(paramRouteDomain) {

@@ -17,7 +17,6 @@ let currentSelectedIndexNum = null
 
 // 필터링할 단어목록
 let filteredWords = []
-
 let finisher = () => {
 
 	if(addressSlider != null)
@@ -25,8 +24,7 @@ let finisher = () => {
 	addressSlider = null
 
 	addressBox.innerHTML = ``
-	currentSelected = ``
-	currentSearchMode = 'input'
+	currentSearchMode = 'list'
 
 	popupPannel.style.display = 'none'
 	questionPannel.style.display = 'none'
@@ -54,13 +52,14 @@ export function SelectModeUpdate(){
 		selectInput.classList.add('address-type-item-selected')
 }
 
-export function AddressSelect(selectedNum){
+export function AddressSelect(selectedNum, processCallback, innerText){
 	// 슬라이더 닫혔으면 패스
 	if(addressSlider === null) return;
 	
 	if(currentSelected.length != 0)
 		currentSelected += '.'
-	currentSelected += document.getElementById(`address-item-${selectedNum}`).children[0].innerText
+	//currentSelected += document.getElementById(`address-item-${selectedNum}`).children[0].innerText
+	currentSelected += innerText
 
 	if(currentSearchMode == 'list'){
 		API.call('/api/address',{key:currentSelected},(paramDatas)=>{
@@ -75,44 +74,16 @@ export function AddressSelect(selectedNum){
 							break
 						}
 					}
-					
-					window.armyWeather.private.address.main = {
-						name: addressName,
-						cell: paramDatas.data[0],
-						long: paramDatas.data[1],
-						lat: paramDatas.data[2],
-						key: currentSelected
-					}
 
-					if(window.armyWeather.private.address.sub.length === 0 ||
-					  (window.armyWeather.private.address.sub.length-1) < currentSelectedIndexNum)
-						currentSelectedIndexNum = null
-
-					if(currentSelectedIndexNum === null){
-						window.armyWeather.private.address.sub.push({
-							name: addressName,
-							cell: paramDatas.data[0],
-							long: paramDatas.data[1],
-							lat: paramDatas.data[2],
-							key: currentSelected
-						})
-						window.armyWeather.private.address.index = window.armyWeather.private.address.sub.length-1
-						if(window.armyWeather.private.address.index < 0) window.armyWeather.private.address.index = 0
-					}else{
-						window.armyWeather.private.address.index = currentSelectedIndexNum
-						window.armyWeather.private.address.sub[currentSelectedIndexNum] = {
-							name: addressName,
-							cell: paramDatas.data[0],
-							long: paramDatas.data[1],
-							lat: paramDatas.data[2],
-							key: currentSelected
-						}
-					}
-
-					currentSelected = ``
 					finisher()
+
+					if(typeof processCallback != undefined && processCallback != null){
+						processCallback(addressName, paramDatas, currentSelected, currentSelectedIndexNum)
+					}
+					currentSelected = ``
 					UpdateAddressBar()
 					LocalWeatherUpdate()
+
 					return
 				}
 			}catch(e){
@@ -137,41 +108,13 @@ export function AddressSelect(selectedNum){
 			}
 		}
 
-		window.armyWeather.private.address.main = {
-			name: addressName,
-			cell: lastParamData[0],
-			long: lastParamData[1],
-			lat: lastParamData[2],
-			key: lastParamData[3]
-		}
-
-		if(window.armyWeather.private.address.sub.length === 0 ||
-		  (window.armyWeather.private.address.sub.length-1) < currentSelectedIndexNum)
-			currentSelectedIndexNum = null
-
-		if(currentSelectedIndexNum === null){
-			window.armyWeather.private.address.sub.push({
-				name: addressName,
-				cell: lastParamData[0],
-				long: lastParamData[1],
-				lat: lastParamData[2],
-				key: lastParamData[3]
-			})
-			window.armyWeather.private.address.index = window.armyWeather.private.address.sub.length-1
-			if(window.armyWeather.private.address.index < 0) window.armyWeather.private.address.index = 0
-		}else{
-			window.armyWeather.private.address.index = currentSelectedIndexNum
-			window.armyWeather.private.address.sub[currentSelectedIndexNum] = {
-				name: addressName,
-				cell: lastParamData[0],
-				long: lastParamData[1],
-				lat: lastParamData[2],
-				key: lastParamData[3]
-			}
-		}
-		
-		currentSelected = ``
 		finisher()
+		if(typeof processCallback != undefined && processCallback != null){
+			lastParamData = { data: lastParamData }
+			processCallback(addressName, lastParamData, lastParamData.data[3], currentSelectedIndexNum)
+		}
+
+		currentSelected = ``
 		UpdateAddressBar()
 		LocalWeatherUpdate()
 	}
@@ -204,12 +147,13 @@ export function AddressSliderUpdate(paramDatas){
 						break
 					}
 				}
-				if(!isFilterMatched) continue
+				if(!isFilterMatched) continue;
 
+				let addressInnerName = (paramData.length ==0) ? '(전체)' : paramData 
 				addressHTML +=
-				`<div id=address-item-${paramDataIndex} class="address-message swiper-slide">
+				`<div class="address-message swiper-slide" onclick="window.armyWeather.callback.popupAddressTouch(${paramDataIndex}, '${addressInnerName}')">
 				<div class="address-context">
-				${(paramData.length ==0) ? '(전체)' : paramData }
+				${ addressInnerName }
 				</div>
 				</div>`
 			}
@@ -217,10 +161,11 @@ export function AddressSliderUpdate(paramDatas){
 			for(let paramDataIndex in paramDatas.data){
 				let paramData = paramDatas.data[paramDataIndex]
 
+				let addressInnerName = (paramData.length ==0) ? '(전체)' : paramData[3].split('.').join(' ')
 				addressHTML +=
-				`<div id=address-item-${paramDataIndex} class="address-message swiper-slide">
+				`<div class="address-message swiper-slide" onclick="window.armyWeather.callback.popupAddressTouch(${paramDataIndex}, '${addressInnerName}')">
 				<div class="address-context">
-				${(paramData.length ==0) ? '(전체)' : paramData[3].split('.').join(' ') }
+				${ addressInnerName }
 				</div>
 				</div>`
 			}
@@ -229,9 +174,6 @@ export function AddressSliderUpdate(paramDatas){
 		addressBox.innerHTML = ``
 		addressBox.insertAdjacentHTML('beforeend', addressHTML)
 	}catch(e){}
-
-	// 정확한 터치 감지용
-	let isTouchMoved = 0
 
 	// 슬라이더 추가
 	addressSlider = new Swiper('.popup-address-slider', {
@@ -242,35 +184,61 @@ export function AddressSliderUpdate(paramDatas){
 		scrollbar: {
 			el: '.swiper-scrollbar',
 			hide: false,
-		},
-		on: {
-			touchMove: (ev)=>{
-				isTouchMoved++
-			},
-			touchEnd: (ev)=>{
-				if(isTouchMoved < 4){
-					for(let pathIndex in ev.path){
-						let slideElement = ev.path[pathIndex]
-						if(slideElement == undefined || typeof slideElement['id'] == 'undefined'
-							|| slideElement.id.indexOf('address-item-') == -1) continue;
-
-						let currentPage = Number(slideElement.id.split(`address-item-`)[1])
-						setTimeout(()=>{AddressSelect(currentPage)},1)
-						break
-					}
-				}
-
-				isTouchMoved = 0
-			}
 		}
 	})
 }
 
 export function AddressQuestionInit (){
-	//
+	window.armyWeather.callback.popupAddressTouch = function (currentPage, innerText){
+		setTimeout(()=>{
+			if(callback === null || callback === undefined){
+
+				// 기본적으로 주소바 정보를 변경합니다.
+				AddressSelect(currentPage, (addressName, paramDatas, currentSelected, currentSelectedIndexNum)=>{
+					window.armyWeather.private.address.main = {
+						name: addressName,
+						cell: paramDatas.data[0],
+						long: paramDatas.data[1],
+						lat: paramDatas.data[2],
+						key: currentSelected
+					}
+
+					if(window.armyWeather.private.address.sub.length === 0 ||
+					  (window.armyWeather.private.address.sub.length-1) < currentSelectedIndexNum)
+						currentSelectedIndexNum = null
+
+					if(currentSelectedIndexNum === null){
+						window.armyWeather.private.address.sub.push({
+							name: addressName,
+							cell: paramDatas.data[0],
+							long: paramDatas.data[1],
+							lat: paramDatas.data[2],
+							key: currentSelected
+						})
+						window.armyWeather.private.address.index = window.armyWeather.private.address.sub.length-1
+						if(window.armyWeather.private.address.index < 0) window.armyWeather.private.address.index = 0
+					}else{
+						window.armyWeather.private.address.index = currentSelectedIndexNum
+						window.armyWeather.private.address.sub[currentSelectedIndexNum] = {
+							name: addressName,
+							cell: paramDatas.data[0],
+							long: paramDatas.data[1],
+							lat: paramDatas.data[2],
+							key: currentSelected
+						}
+					}
+				}, innerText)
+			}else{
+				// 콜백이 존재하면 해당 콜백을 실행합니다.
+				if(typeof callback === 'function')
+					AddressSelect(currentPage, callback, innerText)
+			}
+		},1)
+	}
 }
 
 export function AddressQuestion (paramCallback, selectedIndexNum = null) {
+	document.getElementById(`heat-question`).style.display = 'none'
 	popupPannel.style.display = 'block'
 	questionPannel.style.display = 'block'
 	currentSelectedIndexNum = selectedIndexNum
@@ -280,6 +248,8 @@ export function AddressQuestion (paramCallback, selectedIndexNum = null) {
 
 		// 검색창 닫기
 		document.getElementById('address-question-close').addEventListener('click', (event)=>{
+			currentSearchMode = 'list'
+			SelectModeUpdate()
 			finisher()
 		})
 

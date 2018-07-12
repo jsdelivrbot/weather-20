@@ -1,5 +1,6 @@
 import API from '../../transmitter/api.js'
 import {UpdateAddressBar} from '../life/address.js'
+import {HeatCalculate} from '../popup/heat.js'
 import moment from 'moment'
 
 let weatherSlider = null
@@ -21,8 +22,11 @@ let isInited = false
 let descriptionOpened = false
 let currentSliderSelected = 1
 
+let registeredUpdateCallback = null
+
 let enteritisIndexNum = null
 let currentTempIndexNum = null
+let oldTextTitle = null
 
 let keyData = [
 	'liveWeatherData',
@@ -47,6 +51,8 @@ let keyData = [
 	'liveWarningData',
 	'AWSLiveData',
 	'CITYLiveData',
+	'SubtitleData',
+	'localAreaData',
 ]
 
 let needToLoadCount = keyData.length
@@ -100,9 +106,11 @@ export function weatherBackgroundParse(paramWeatherGrade, paramCloudGrade, isLig
 	//if(paramWeatherGrade == 2) return '눈비'
 	//if(paramWeatherGrade == 3) return '눈 내림'
 
+	let isNight = moment().get('hours')
+	isNight = isNight >= 19 || isNight <= 6
+
 	let weatherStatus = '맑음'
 	let currentDay = moment().get('hours')
-	let isNight = currentDay <= 20 && currentDay >= 6
 
 	if(paramCloudGrade == 1){ //구름정보 맑음
 		if(paramWeatherGrade == 0) weatherStatus = '맑음'
@@ -155,10 +163,18 @@ export function weatherBackgroundParse(paramWeatherGrade, paramCloudGrade, isLig
 	if(isRainingOverride) iconId = 1
 
 	// 번개치면 무조건 배경 변경
-	if(isLightning){
-		iconId = 'thunder'
-	}
+	if(isLightning) iconId = 'thunder'
 
+	if(isNight){
+		switch(iconId){
+		   case 'rain':
+		   case 'clean':
+		   case 'cloud':
+		   case 'foggy':
+				iconId += '_night'
+		   break
+		}
+	}
 	return `url(../resources/background/${iconId}.jpg`
 }
 
@@ -182,7 +198,7 @@ export function ozonGradeParse(paramGrade){
 }
 
 export function ozonColorParseUsingTextFront(paramGrade){
-	if(paramGrade == '좋음') return '#189be7'
+	if(paramGrade == '좋음') return '#52c9de'
 	if(paramGrade == '보통') return '#22ad73'
 	if(paramGrade == '나쁨') return '#ff6c00'
 	if(paramGrade == '최악') return '#ff6c00'
@@ -253,14 +269,14 @@ export function generalColorParse(paramGrade, isFront = false){
 }
 
 export function tempIndexColor(paramTemp){
-	if(Number(paramTemp) >= 29) return `style="color: tomato;text-shadow: 1px 1px #000;"`
-	else if(Number(paramTemp) >= 26) return `style="color: #e78d18;text-shadow: 1px 1px #000;"`
-	return ''
+	if(Number(paramTemp) >= 29) return `style="color: tomato;text-shadow: 1px 1px #000;font-size: 16px;"`
+	else if(Number(paramTemp) >= 26) return `style="color: #e78d18;text-shadow: 1px 1px #000;font-size: 16px;"`
+	return 'style="font-size: 16px;"'
 }
 
 export function dustIndexColor(paramDust){
-	if(paramDust == '좋음') return 'style="color: #fff;"'
-	else if(paramDust == '보통') return 'style="color: #fff;"'
+	if(paramDust == '좋음') return 'style="color: #69fbf5;"'
+	else if(paramDust == '보통') return 'style="color: #e2ffc3;"'
 	else if(paramDust == '주의') return `style="color: #e78d18;"`
 	else if(paramDust == '나쁨') return `style="color: tomato;"`
 	return ''
@@ -279,7 +295,7 @@ export function rainPercentageColor(paramRainPercentage){
 }
 
 export function rainAmountColor(paramRainAmount){
-	if(paramRainAmount >= 20) return `style="color: tomato;"`
+	if(paramRainAmount >= 15) return `style="color: tomato;"`
 	else if(paramRainAmount >= 30) return `style="color: #e78d18;"`
 	return ``
 }
@@ -536,6 +552,9 @@ export function LocalWeatherRedraw(){
 			windDirection = windDirectionParse(Number(liveWeatherData.data.windDirection.obsrValue))
 			windSpeed = liveWeatherData.data.windSpeed.obsrValue + 'm/s'
 
+			//document.getElementById(`heat-question-rtemp2-input`).value = Number(liveWeatherData.data.windSpeed.obsrValue)
+			document.getElementById(`heat-question-rtemp2-input`).value = ''
+
 			// 강우량
 			amount = liveWeatherData.data.rainAmountAfter1Hour.obsrValue + 'mm'
 
@@ -549,6 +568,7 @@ export function LocalWeatherRedraw(){
 			descriptionAdder(weatherTextParse(liveWeatherData.data.weather.obsrValue, liveWeatherData.data.cloud.obsrValue, liveWeatherData.data.lightning.obsrValue))
 			descriptionAdder((liveWeatherData.data.lightning.obsrValue == 1) ? '낙뢰있음' : '낙뢰없음')
 			descriptionAdder(moment(window.armyWeather.private.liveWeatherData.timestamp).utcOffset('+0900').format('HH:00 시부 발표'))
+			// descriptionAdder(`온도ㆍ강수량은 매분 발표중`)
 
 			let bgImgInner = document.getElementById(`bgimg-inner`)
 			let bgImgSrc = weatherBackgroundParse(liveWeatherData.data.weather.obsrValue, liveWeatherData.data.cloud.obsrValue, liveWeatherData.data.lightning.obsrValue)
@@ -556,8 +576,13 @@ export function LocalWeatherRedraw(){
 
 			// 비오는 이미지일때만 블러적용
 			let bgImgBlur = document.getElementById(`overlay-bgimg`)
-			if(bgImgSrc.indexOf(`rain.jpg`) !== -1){
+			
+			// rain_night
+			if(bgImgSrc.indexOf(`rain_night.jpg`) !== -1
+				|| bgImgSrc.indexOf(`cloud_night.jpg`) !== -1){
 				bgImgBlur.style.opacity = 1
+			}else if(bgImgSrc.indexOf(`clean_night.jpg`) !== -1){
+				bgImgBlur.style.opacity = 0.7
 			}else{
 				bgImgBlur.style.opacity = 0
 			}
@@ -566,7 +591,7 @@ export function LocalWeatherRedraw(){
 			bgImgInner.style['background-repeat'] = 'round'
 		}
 	}catch(e){
-		console.log(e)
+		//console.log(e)
 	}
 
 	let currentHour = moment().get('hour')
@@ -578,6 +603,11 @@ export function LocalWeatherRedraw(){
 
 	if(weather != '-') document.getElementById('day-weather-status-img').src = weather
 
+	
+	// 3가지 정보를 보고별로 출력
+	// 더위지수 온도지수 체감온도
+	let isRealTempReported = false
+	
 	let currentTempIndex = '-'
 	let currentTempIndexHour = '(-시 기준)'
 	if(weeklyHeatdata !== undefined && weeklyHeatdata !== null){
@@ -597,10 +627,65 @@ export function LocalWeatherRedraw(){
 			}
 		}catch(e){}
 	}
+	
+	try{
+		if(window.armyWeather.private.localAreaData.data.data !== undefined){
+			let currentMonth = Number(moment().format('M'))
 
-	document.getElementById('day-weather-info5').innerHTML = currentTempIndex
-	document.getElementById('day-weather-info6').innerHTML = `(${currentTempIndexHour}시 기준)`
+			// 온도지수는 5~9월달
+			// 체감지수는 10~4월달
+			if(currentMonth >= 5 && currentMonth <= 9){
+				// 온도지수 표시
+				if(window.armyWeather.private.localAreaData.data.data.tempIndex !== null){
+					// 데이터가 존재하고 숫자일 때
 
+					let isLastTimeCurrent = false
+					let reportedTimeHour = Number(moment(window.armyWeather.private.localAreaData.data.data.reportedTime).format('H'))
+					let currentDiffTimeHour = Number(moment().format('H'))
+					let lastTimeDiff = Math.abs(reportedTimeHour - currentDiffTimeHour)
+
+					isLastTimeCurrent = (lastTimeDiff <= 2)
+
+					if(isLastTimeCurrent){
+						document.getElementById(`day-weather-info4`).innerText = `온도지수:`
+						document.getElementById('day-weather-info5').innerHTML = window.armyWeather.private.localAreaData.data.data.tempIndex
+						document.getElementById('day-weather-info6').innerHTML = `(${reportedTimeHour}시 기준)`
+						isRealTempReported = true
+					}
+				}
+			}else{
+				// 온도지수 표시
+				if(window.armyWeather.private.localAreaData.data.data.realTemp !== null){
+					// 데이터가 존재하고 숫자일 때
+
+					let isLastTimeCurrent = false
+					let reportedTimeHour = Number(moment(window.armyWeather.private.localAreaData.data.data.reportedTime).format('H'))
+					let currentDiffTimeHour = Number(moment().format('H'))
+					let lastTimeDiff = Math.abs(reportedTimeHour - currentDiffTimeHour)
+
+					isLastTimeCurrent = (lastTimeDiff <= 2)
+
+					if(isLastTimeCurrent){
+						document.getElementById(`day-weather-info4`).innerText = `체감온도:`
+						document.getElementById('day-weather-info5').innerHTML = window.armyWeather.private.localAreaData.data.data.realTemp
+						document.getElementById('day-weather-info6').innerHTML = `(${reportedTimeHour}시 기준)`
+						isRealTempReported = true
+					}
+				}
+			}
+		}
+	}catch(e){}
+	
+	if(!isRealTempReported){
+		document.getElementById(`day-weather-info4`).innerText = `더위지수:`
+		document.getElementById('day-weather-info5').innerHTML = currentTempIndex
+		document.getElementById('day-weather-info6').innerHTML = `(${currentTempIndexHour}시 기준)`
+	}
+
+	
+
+	
+	
 	let ozon = '-'
 	let ozonGrade = '(-)'
 	let ozonColor = '#fff'
@@ -692,7 +777,7 @@ export function LocalWeatherRedraw(){
 	let tempA = dustGradeReverse(pm10Grade)
 	let tempB = dustGradeReverse(pm25Grade)
 	intergratedAirGrade = (tempA < tempB) ? tempA : tempB
-	if(intergratedAirGrade == 5) intergratedAirGrade =  '정보없음'
+	if(intergratedAirGrade == 5) intergratedAirGrade =  '-'
 	if(intergratedAirGrade == 4) intergratedAirGrade = '좋음'
 	if(intergratedAirGrade == 3) intergratedAirGrade = '보통'
 	if(intergratedAirGrade == 2) intergratedAirGrade = '나쁨'
@@ -703,16 +788,19 @@ export function LocalWeatherRedraw(){
 	document.getElementById(`local-air-grade-grpah`).style.background = ozonColorParseUsingTextFront(intergratedAirGrade)
 
 	document.getElementById('day-air-info1').innerHTML = ozon
+	if(ozonGrade == '(-)') ozonGrade = '-'
 	document.getElementById('day-air-info2').innerHTML = `(${ozonGrade})`
 	document.getElementById('day-air-info1').style.color = ozonColor
 	document.getElementById('day-air-info2').style.color = ozonColor
 
 	document.getElementById('day-weather-wind-info2').innerHTML = pm10
+	if(pm10Grade == '(-)') pm10Grade = '-'
 	document.getElementById('day-weather-wind-info3').innerHTML = `(${pm10Grade})`
 	document.getElementById('day-weather-wind-info2').style.color = pm10Color
 	document.getElementById('day-weather-wind-info3').style.color = pm10Color
 
 	document.getElementById('day-weather-wind-info5').innerHTML = pm25
+	if(pm25Grade == '(-)') pm25Grade = '-'
 	document.getElementById('day-weather-wind-info6').innerHTML = `(${pm25Grade})`
 	document.getElementById('day-weather-wind-info5').style.color = pm25Color
 	document.getElementById('day-weather-wind-info6').style.color = pm25Color
@@ -722,6 +810,7 @@ export function LocalWeatherRedraw(){
 	let frontPM10ValueElem = document.getElementById(`front-pm10-value`)
 	let frontPM10GradeElem = document.getElementById(`front-pm10-grade`)
 	frontPM10ValueElem.innerText = pm10
+	if(pm10Grade == '(-)') pm10Grade = '-'
 	frontPM10GradeElem.innerText = `[${pm10Grade}]`
 	frontPM10GradeElem.style.color = frontPM10Color
 
@@ -729,6 +818,7 @@ export function LocalWeatherRedraw(){
 	let frontPM2_5Color = ozonColorParseUsingText(pm25Grade)
 	let frontPM2_5ValueElem = document.getElementById(`front-pm2_5-value`)
 	let frontPM2_5GradeElem = document.getElementById(`front-pm2_5-grade`)
+	if(pm25Grade == '(-)') pm25Grade = '-'
 	frontPM2_5ValueElem.innerText = pm25
 	frontPM2_5GradeElem.innerText = `[${pm25Grade}]`
 	frontPM2_5GradeElem.style.color = frontPM2_5Color
@@ -843,8 +933,7 @@ export function LocalWeatherRedraw(){
 					centeredSlides: false,
 					grabCursor: true,
 					scrollbar: {
-						el: '.swiper-scrollbar',
-						hide: true,
+						el: '.swiper-scrollbar'
 					}
 				})
 			}
@@ -865,8 +954,8 @@ export function LocalWeatherRedraw(){
 				<br>
 				<img class="local-weather-context-img" src="resources/icons/pack-1/21.png" style="opacity:  0;height: 48px;"></img><br>
 				<a class="local-weather-context-sub">날씨</a><br>
-				<a class="local-weather-context-sub local-weather-context-temp">최고온도</a><br>
-				<a class="local-weather-context-sub local-weather-context-temp">최저온도</a><br>
+				<a class="local-weather-context-sub local-weather-context-temp" style="font-size: 16px;">최고온도</a><br>
+				<a class="local-weather-context-sub local-weather-context-temp" style="font-size: 16px;">최저온도</a><br>
 				<a class="local-weather-context-sub">미세먼지</a><br>
 				<a class="local-weather-context-sub">초미세먼지</a><br>
 				<a class="local-weather-context-sub">오존상태</a><br>
@@ -953,7 +1042,7 @@ export function LocalWeatherRedraw(){
 					if(isNeedToMakeSolo){
 						if(contextOption == 'local-weather-context-center')
 						contextOption = ''
-						currentWeekDay = ''
+						//currentWeekDay = ''
 					}
 
 					let tempMax = manuaAdd.tempMax
@@ -993,7 +1082,7 @@ export function LocalWeatherRedraw(){
 					weatherHTML += `<img class=local-weather-context-img src="${getWeatherIcon(manuaAdd.hour, manuaAdd.cloudKR)}" class=day-status-img></img><br>`
 					weatherHTML += `<a class="local-weather-context-sub">${(manuaAdd.cloudKR).split(' ').join('')}` + `</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp" ${tempIndexColor(tempMax)}>${tempMax}℃</a><br>`
-					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp">${tempMin}℃</a><br>`
+					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp" style="font-size: 16px;">${tempMin}℃</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerPM10)}>${innerPM10}`+`</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerPM2_5)}>${innerPM2_5}`+`</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerOzon)}>${innerOzon}` + `</a><br>`
@@ -1005,7 +1094,7 @@ export function LocalWeatherRedraw(){
 				for(let weeklyDataIndex in weeklyWeatherData.local){
 					let weeklyData = weeklyWeatherData.local[weeklyDataIndex]
 					let currentTimeParse = weeklyData.tmEf[0].split(' ')
-					let currentDay = `${currentTimeParse[0].split('-')[1]}/${currentTimeParse[0].split('-')[2]}`
+					let currentDay = `${Number(currentTimeParse[0].split('-')[1])}/${Number(currentTimeParse[0].split('-')[2])}`
 					let currentDate = moment(currentTimeParse[0])
 					let currentWeekDay = `(${(currentWeekDayParse(moment(currentDate).days()))})`
 
@@ -1064,7 +1153,7 @@ export function LocalWeatherRedraw(){
 					weatherHTML += `<img class=local-weather-context-img src="${getWeatherIcon(currentDate.get('hours'), weeklyData.wf[0])}" class=day-status-img></img><br>`
 					weatherHTML += `<a class="local-weather-context-sub">${(weeklyData.wf[0]).split(' ').join('')}` + `</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp" ${tempIndexColor(weeklyData.tmx[0])}>${weeklyData.tmx[0]}℃</a><br>`
-					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp">${weeklyData.tmn[0]}℃</a><br>`
+					weatherHTML += `<a class="local-weather-context-sub local-weather-context-temp" style="font-size: 16px;">${weeklyData.tmn[0]}℃</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerPM10)}>${innerPM10}`+`</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerPM2_5)}>${innerPM2_5}`+`</a><br>`
 					weatherHTML += `<a class="local-weather-context-sub" ${dustIndexColor(innerOzon)}>${innerOzon}` + `</a><br>`
@@ -1082,16 +1171,19 @@ export function LocalWeatherRedraw(){
 					spaceBetween: 0,
 					grabCursor: true,
 					scrollbar: {
-						el: '.swiper-scrollbar',
-						hide: true,
+						el: '.swiper-scrollbar'
 					}
 				})
 
 				let infoHTML = `
 				<div class="swiper-wrapper">
 				<div class="swiper-slide local-info-text">`
+				
+				+`<br/>
+				<h4>[${liveWarningData.reports.news.title}]</h4><br/>
+				${liveWarningData.reports.news.context.split('<br /><br />').join('<br/><br/>').split('<br />').join('').split(`( 기상 현황과 전망 )`).join(``)}`
 				// <h2>[실시간 기상전망]</h2>
-				+`<br/>${weeklyWeatherData.localData.description.split('<br /><br />').join('<br/><br/>').split('<br />').join('')}`
+				infoHTML += `<br/><br/>${weeklyWeatherData.localData.description.split('<br /><br />').join('<br/><br/>').split('<br />').join('')}`
 				/*
 				+`<br/><h2>[한달기상예보]</h2><br/>`
 				+`[${monthlyWeatherData.forecast.title}]<br/>`
@@ -1118,7 +1210,7 @@ export function LocalWeatherRedraw(){
 					infoHTML += `<br/><br/>`
 				}
 				*/
-				infoHTML += `</div><div class="swiper-scrollbar-n"></div>`
+				infoHTML += `</div><div class="swiper-scrollbar"></div>`
 				infoFrontBox.insertAdjacentHTML('beforeend', infoHTML)
 				document.getElementById(`day-weather-outline`).style.zIndex = 1
 
@@ -1127,14 +1219,13 @@ export function LocalWeatherRedraw(){
 					slidesPerView: 'auto',
 					freeMode: true,
 					scrollbar: {
-						el: '.swiper-scrollbar-n',
-						hide: false,
+						el: '.swiper-scrollbar'
 					},
 					mousewheel: true,
 				})
 			}
 		}catch(e){
-			console.log(e)
+			//console.log(e)
 		}
 	}else if(currentSliderSelected == 3){
 		document.getElementById(`local-weather-box-type`).style.zIndex = 0
@@ -1158,7 +1249,7 @@ export function LocalWeatherRedraw(){
 							return '-℃'
 						return `${AWSLiveData.global[areaName].data.temp}℃`
 					}catch(e){
-						console.log(e)
+						//console.log(e)
 						return '-℃'
 					}
 				}
@@ -1170,7 +1261,7 @@ export function LocalWeatherRedraw(){
 						let globalAreaInnerData = AWSLiveData.global[areaName].live.data
 						return weatherParse(globalAreaInnerData.weather.obsrValue, globalAreaInnerData.cloud.obsrValue, globalAreaInnerData.lightning.obsrValue)
 					}catch(e){
-						console.log(e)
+						//console.log(e)
 						return 'resources/icons/pack-1/15.png'
 					}
 				}
@@ -1179,14 +1270,14 @@ export function LocalWeatherRedraw(){
 
 				// 현재 전국날씨 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img1 src="/resources/images/map.png" class=global-weather-img></img>`
+				+ `<img id=global-weather-img1 data-src="/resources/images/map.png" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id="global-weather-title" style="color: #516d77;"><p>현재 전국날씨</p></div>`
 
 				// 인천
 				+ `<div class="global-weather-box" style="top: 81px;left: 77px;">
 						<div class="global-weather-item1">인천</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`인천`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`인천`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`인천`)}</div>
 					</div>`
@@ -1194,7 +1285,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 64px;left: 134px;">
 						<div class="global-weather-item1">서울</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`서울`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`서울`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`서울`)}</div>
 					</div>`
@@ -1202,7 +1293,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 57px;left: 188px;">
 						<div class="global-weather-item1">포천</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`포천`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`포천`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`포천`)}</div>
 					</div>`
@@ -1211,7 +1302,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 25px;left: 241px;">
 						<div class="global-weather-item1">춘천</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`춘천`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`춘천`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`춘천`)}</div>
 					</div>`
@@ -1220,7 +1311,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 152px;left: 143px;">
 						<div class="global-weather-item1">수원</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`수원`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`수원`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`수원`)}</div>
 					</div>`
@@ -1229,7 +1320,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 63px;left: 291px;">
 						<div class="global-weather-item1">강릉</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`강릉`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`강릉`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`강릉`)}</div>
 					</div>`
@@ -1238,7 +1329,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 457px;left: 126px;">
 						<div class="global-weather-item1">광주</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`광주`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`광주`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`광주`)}</div>
 					</div>`
@@ -1247,7 +1338,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 296px;left: 293px;">
 						<div class="global-weather-item1">대구</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`대구`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`대구`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`대구`)}</div>
 					</div>`
@@ -1256,7 +1347,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 232px;left: 202px;">
 						<div class="global-weather-item1">대전</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`대전`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`대전`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`대전`)}</div>
 					</div>`
@@ -1264,7 +1355,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 366px;left: 75px;">
 						<div class="global-weather-item1">목포</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`목포`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`목포`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`목포`)}</div>
 					</div>`
@@ -1272,7 +1363,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 395px;left: 296px;">
 						<div class="global-weather-item1">부산</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`부산`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`부산`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`부산`)}</div>
 					</div>`
@@ -1280,7 +1371,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 247px;left: 130PX;">
 						<div class="global-weather-item1">세종</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`세종`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`세종`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`세종`)}</div>
 					</div>`
@@ -1288,7 +1379,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 423px;left: 208px;">
 						<div class="global-weather-item1">여수</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`여수`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`여수`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`여수`)}</div>
 					</div>`
@@ -1296,7 +1387,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 319px;left: 374px;">
 						<div class="global-weather-item1">울산</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`울산`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`울산`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`울산`)}</div>
 					</div>`
@@ -1304,7 +1395,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 131px;left: 233px;">
 						<div class="global-weather-item1">원주</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`원주`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`원주`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`원주`)}</div>
 					</div>`
@@ -1312,7 +1403,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 328px;left: 185px;">
 						<div class="global-weather-item1">전주</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`전주`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`전주`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`전주`)}</div>
 					</div>`
@@ -1320,7 +1411,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 213px;left: 268px;">
 						<div class="global-weather-item1">충주</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`충주`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`충주`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`충주`)}</div>
 					</div>`
@@ -1328,7 +1419,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 489px;left: 3px;">
 						<div class="global-weather-item1">제주</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`제주`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`제주`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`제주`)}</div>
 					</div>`
@@ -1336,7 +1427,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 90px;left: 342px;">
 						<div class="global-weather-item1">울릉</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`울릉`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`울릉`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`울릉`)}</div>
 					</div>`
@@ -1344,7 +1435,7 @@ export function LocalWeatherRedraw(){
 				+ `<div class="global-weather-box" style="top: 97px;left: 390px;">
 						<div class="global-weather-item1">독도</div>
 						<div class="global-weather-item2">
-							<img class="local-weather-context-img" src="${getGlobalIcon(`독도`)}" style="height: 30PX;width:  30PX;">
+							<img class="local-weather-context-img swiper-lazy" data-src="${getGlobalIcon(`독도`)}" style="height: 30PX;width:  30PX;">
 						</div>
 						<div class="global-weather-item3">${getGlobalTemp(`독도`)}</div>
 					</div>`
@@ -1370,30 +1461,86 @@ export function LocalWeatherRedraw(){
 				console.log(xPx, yPx)
 				*/
 
+				// 기상청 공항기상
+				globalHTML += `<div class="swiper-slide">`
+				+ `
+<div style="
+    width: 171px;
+    height: 102px;
+    position: absolute;
+    top: 170px;
+    z-index: 5;
+"></div>
+<div style="
+    width: 440px;
+    height: 400px;
+    position: absolute;
+    top: 249px;
+    z-index: 5;
+"></div>
+<div style="
+    position:  relative;
+    left: -37px;
+    top: -155px;
+    width: 570px;
+    height: 401px;
+    overflow: hidden;
+    z-index: 3;
+"><iframe id="ifrm" name="ifrm" src="http://amo.kma.go.kr/new/html/weather/weather01_01.jsp" style="width: 545px;height: 689px;position:  relative;top: -232px;left: -173px;z-index: 2;transform: scale(1.27, 1);" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe></div>
+<div style="
+    position:  relative;
+    left: 15px;
+    top: -222px;
+    width: 475px;
+    height: 701px;
+    overflow: hidden;
+"><iframe id="ifrm" name="ifrm" src="http://amo.kma.go.kr/new/html/weather/weather01_01.jsp" style="width: 1145px;height: 889px;position:  relative;top: -290px;left: -633px;z-index: 2;transform: scale(0.97, 0.8);" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe></div></div>`
+
+				let lat = window.armyWeather.private.address.main.lat
+				let long = window.armyWeather.private.address.main.long
 				// 미세먼지 슬라이드 구현
 				globalHTML += `<div class="swiper-slide">`
-				+ `<img src="/resources/gif/dustgif_0.gif" class=global-weather-img-dust></img>`
+				+ `<img data-src="${window.armyWeather.private.apiPath}/resources/gif/dustgif_0.gif" class="global-weather-img-dust swiper-lazy"></img>`
 				+ `<div id="global-weather-title" style="color: #3597fa;"><p>미세먼지예보</p></div>`
 				+ `</div>`
-
+				
 				// 초미세먼지 슬라이드 구현
-				+ `<div class="swiper-slide">`
-				+ `<img src="/resources/gif/dustgif_1.gif" class=global-weather-img-dust></img>`
+				globalHTML += `<div class="swiper-slide">`
+				+ `<img data-src="${window.armyWeather.private.apiPath}/resources/gif/dustgif_1.gif" class="global-weather-img-dust swiper-lazy"></img>`
 				+ `<div id=global-weather-title style="color: #3597fa;"><p>초미세먼지예보</p></div>`
 				+ `</div>`
 
 				// 오존 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img src="/resources/gif/dustgif_2.gif" class=global-weather-img-dust></img>`
+				+ `<img data-src="${window.armyWeather.private.apiPath}/resources/gif/dustgif_2.gif" class="global-weather-img-dust swiper-lazy"></img>`
 				+ `<div id=global-weather-title style="color: #3597fa;"><p>오존예보</p></div>`
 				+ `</div>`
 
+				// 기상청 위성사진
+				globalHTML += `<div class="swiper-slide">`
+				+ `<div style="
+    position:  relative;
+    left: 0;
+    width:  440px;
+    height: 568px;
+    overflow: hidden;
+">
+<div style="
+    width: 440px;
+    height: 514px;
+    position: absolute;
+    top: 55px;
+    z-index: 5;
+"></div>
+<iframe id="ifrm" name="ifrm" src="http://www.weather.go.kr/weather/images/satellite_basic03.jsp" style="width: 736px;height: 1000px;position:  relative;top: -432px;left: -271px;z-index: 2;transform: scale(0.97, 1);" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe></div></div>`
+
+				/*
 				// 전국기온예보 슬라이드 구현
-				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/temp.gif" class=global-weather-img></img>`
+				globalHTML += `<div class="swiper-slide">`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/temp.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id=global-weather-title><p>전국기온예보</p></div>`
-				+ `<div id=global-weather-img3><img src="/resources/gif/temp.gif" class=global-weather-img></img></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/temp.gif" class=global-weather-img></img></div>`
+				+ `<div id=global-weather-img3><img data-src="/resources/gif/temp.gif" class="global-weather-img swiper-lazy"></img></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/temp.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count"><p style="
 					color: #c80000;
 					text-shadow: 1px 1px #ff9191;
@@ -1421,10 +1568,10 @@ export function LocalWeatherRedraw(){
 
 				// 전국최고기온 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/tempmax.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/tempmax.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id=global-weather-title-year><p>최고기온예보</p></div>`
-				+ `<div id=global-weather-img3-year><img src="/resources/gif/tempmax.gif" class=global-weather-img></img></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/tempmax.gif" class=global-weather-img></img></div>`
+				+ `<div id=global-weather-img3-year><img data-src="/resources/gif/tempmax.gif" class="global-weather-img swiper-lazy"></img></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/tempmax.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count"><p style="
 					color: #c80000;
 					text-shadow: 1px 1px #ff9191;
@@ -1452,10 +1599,10 @@ export function LocalWeatherRedraw(){
 
 				// 전국강수량 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/rainamount.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/rainamount.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id=global-weather-title-year><p>전국강수량예보</p></div>`
-				+ `<div id=global-weather-img3-year><img src="/resources/gif/rainamount.gif" class=global-weather-img></img></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/rainamount.gif" class=global-weather-img></img></div>`
+				+ `<div id=global-weather-img3-year><img data-src="/resources/gif/rainamount.gif" class="global-weather-img swiper-lazy"></img></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/rainamount.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count" style="
 					line-height: 73px;
 				"><p style="
@@ -1485,10 +1632,10 @@ export function LocalWeatherRedraw(){
 
 				// 전국강수확률 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/rain.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/rain.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id=global-weather-title-year><p>강수확률예보</p></div>`
-				+ `<div id=global-weather-img3-year><img src="/resources/gif/rain.gif" class=global-weather-img></img></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/rain.gif" class=global-weather-img></img></div>`
+				+ `<div id=global-weather-img3-year><img data-src="/resources/gif/rain.gif" class="global-weather-img swiper-lazy"></img></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/rain.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count" style="
 					line-height: 107px;
 					top: -683px;
@@ -1516,14 +1663,13 @@ export function LocalWeatherRedraw(){
 
 				// 전국하늘상태 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/sky.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/sky.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id="global-weather-title-year" style="color: #008eaa;"><p>하늘상태예보</p></div>`
-				+ `<div id="global-weather-img3-year" style="filter: hue-rotate(-55deg);"><img src="/resources/gif/sky.gif" class="global-weather-img"></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/sky.gif" class=global-weather-img></img></div>`
+				+ `<div id="global-weather-img3-year" style="filter: hue-rotate(-55deg);"><img data-src="/resources/gif/sky.gif" class="global-weather-img swiper-lazy"></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/sky.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count" style="
 					line-height: 133px;
 					top: -674px;
-					/* writing-mode: vertical-lr; */
 					width: 38px;
 					text-align: left;
 				"><p style="
@@ -1544,10 +1690,10 @@ export function LocalWeatherRedraw(){
 
 				// 전국파고상태 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/wave.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/wave.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id="global-weather-title-year" style="color: #6b4300;"><p>전국파고예보</p></div>`
-				+ `<div id="global-weather-img3-year" style="filter: hue-rotate(170deg);"><img src="/resources/gif/wave.gif" class="global-weather-img"></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/wave.gif" class=global-weather-img></img></div>`
+				+ `<div id="global-weather-img3-year" style="filter: hue-rotate(170deg);"><img data-src="/resources/gif/wave.gif" class="global-weather-img swiper-lazy"></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/wave.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count"><p style="
 					color: #c80000;
 					text-shadow: 1px 1px #ff9191;
@@ -1575,10 +1721,10 @@ export function LocalWeatherRedraw(){
 
 				// 전국습도 슬라이드 구현
 				+ `<div class="swiper-slide">`
-				+ `<img id=global-weather-img2 src="/resources/gif/humidity.gif" class=global-weather-img></img>`
+				+ `<img id=global-weather-img2 data-src="/resources/gif/humidity.gif" class="global-weather-img swiper-lazy"></img>`
 				+ `<div id=global-weather-title-year><p>전국습도예보</p></div>`
-				+ `<div id=global-weather-img3-year><img src="/resources/gif/humidity.gif" class=global-weather-img></img></div>`
-				+ `<div id=global-weather-img4><img src="/resources/gif/humidity.gif" class=global-weather-img></img></div>`
+				+ `<div id=global-weather-img3-year><img data-src="/resources/gif/humidity.gif" class="global-weather-img swiper-lazy"></img></div>`
+				+ `<div id=global-weather-img4><img data-src="/resources/gif/humidity.gif" class="global-weather-img swiper-lazy"></img></div>`
 				+ `<div id="global-weather-count" style="
 					line-height: 67px;
 					top: -618px;
@@ -1603,14 +1749,45 @@ export function LocalWeatherRedraw(){
 				">0%<br></p></div>`
 				+ `<div id=global-weather-fill></div>`
 				+ `</div>`
+				*/
 
-				// meteoblue 위성지도 슬라이드 구현
 				// WEB GL 지원 될 때만 구현적용
 				if(WEBGLSupportCheck()){
+					/*
+					// 미세먼지 위성지도 슬라이드 구현
 					globalHTML += `<div class="swiper-slide">`
-					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>기상 레이더</p></div>`
+					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>미세먼지 레이더</p></div>`
+					globalHTML += `<iframe id="ifrm2" name="ifrm2" src="https://earth.nullschool.net/#current/particulates/surface/level/overlay=pm2.5/orthographic=-233.73,36.00,1300/loc=${long},${lat}" style="width: 100%;height: 90%;position:  relative;top: 33px;z-index: -10;" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
+					globalHTML += `</div>`
+
+					// 초미세먼지 위성지도 슬라이드 구현
+					globalHTML += `<div class="swiper-slide">`
+					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>초미세먼지 레이더</p></div>`
+					globalHTML += `<iframe id="ifrm2" name="ifrm2" src="https://earth.nullschool.net/#current/particulates/surface/level/overlay=pm10/orthographic=-233.73,36.00,1300/loc=${long},${lat}" style="width: 100%;height: 90%;position:  relative;top: 33px;z-index: -10;" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
+					globalHTML += `</div>`
+
+					// 파고 위성지도 슬라이드 구현
+					globalHTML += `<div class="swiper-slide">`
+					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>파고 레이더</p></div>`
+					globalHTML += `<iframe id="ifrm2" name="ifrm2" src="https://earth.nullschool.net/#current/ocean/primary/waves/overlay=significant_wave_height/orthographic=-233.73,36.00,1300/loc=${long},${lat}" style="width: 100%;height: 90%;position:  relative;top: 33px;z-index: -10;" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
+					globalHTML += `</div>`
+
+					// 바람 위성지도 슬라이드 구현
+					globalHTML += `<div class="swiper-slide">`
+					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>바람 레이더</p></div>`
+					globalHTML += `<iframe id="ifrm2" name="ifrm2" src="https://earth.nullschool.net/#current/wind/surface/level/orthographic=-233.73,36.00,1300/loc=${long},${lat}" style="width: 100%;height: 90%;position:  relative;top: 33px; z-index: -10;" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
+					globalHTML += `</div>`
+					*/
+				}
+
+				if(WEBGLSupportCheck()){
+					/*
+					// meteoblue 위성지도 슬라이드 구현
+					globalHTML += `<div class="swiper-slide">`
+					globalHTML += `<div id="global-weather-title" style="color: #516d77;"><p>바람세기 레이더</p></div>`
 					globalHTML += `<iframe id="ifrm" name="ifrm" src="https://www.meteoblue.com/en/weather/maps/index#36.485N130.254E_KST+09:00" style="width: 100%;height: 90%;position:  relative;top: 33px;" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
 					globalHTML += `</div>`
+					*/
 				}
 
 				globalHTML += `</div>
@@ -1621,6 +1798,7 @@ export function LocalWeatherRedraw(){
 
 				let isTouchMoved = 0
 				graphicSlider = new Swiper('.global-info-slider', {
+					lazy: true,
 					slidesPerView: 'auto',
 					centeredSlides: false,
 					grabCursor: true,
@@ -1677,6 +1855,22 @@ export function LocalWeatherRedraw(){
 					}
 				})
 
+				// 호출되면 미리 모든 페이지 불러오기
+				graphicSlider.lazy.loadInSlide(0)
+				graphicSlider.lazy.loadInSlide(1)
+				graphicSlider.lazy.loadInSlide(2)
+				graphicSlider.lazy.loadInSlide(3)
+				graphicSlider.lazy.loadInSlide(4)
+				graphicSlider.lazy.loadInSlide(5)
+				graphicSlider.lazy.loadInSlide(6)
+				/*
+				graphicSlider.lazy.loadInSlide(7)
+				graphicSlider.lazy.loadInSlide(8)
+				graphicSlider.lazy.loadInSlide(9)
+				graphicSlider.lazy.loadInSlide(10)
+				graphicSlider.lazy.loadInSlide(11)
+				*/
+
 				let infoHTML = `
 				<div class="swiper-wrapper">
 				<div class="swiper-slide local-info-text">`
@@ -1688,7 +1882,7 @@ export function LocalWeatherRedraw(){
 				+`<br/><br/>[${dailyDustData.data[2].time} 미세먼지 예보]<br/>${(dailyDustData.data[2].description).split('[미세먼지]').join('')} <br/>${dustDescription2dayAfter}`
 
 				infoHTML += `</div>`
-				infoHTML += `</div><div class="swiper-scrollbar-i"></div>`
+				infoHTML += `<div class="swiper-scrollbar"></div></div>`
 				sliderBox.style.zIndex = "0"
 				let infoBox = document.getElementById(`local-info-slider-box`)
 				infoBox.insertAdjacentHTML('beforeend', infoHTML)
@@ -1698,16 +1892,17 @@ export function LocalWeatherRedraw(){
 					slidesPerView: 'auto',
 					freeMode: true,
 					scrollbar: {
-						el: '.swiper-scrollbar-i',
+						el: '.swiper-scrollbar',
 						hide: false,
 					},
 					mousewheel: true,
 				})
 			}
 		}catch(e){
-			console.log(e)
+			//console.log(e)
 		}
 	}else if(currentSliderSelected == 4){
+		document.getElementById(`local-weather-box-type`).style.zIndex = 0
 		weatherBoxOutline.style.background = `#fff`
 
 		try{
@@ -1723,9 +1918,6 @@ export function LocalWeatherRedraw(){
 				+`<br/><br/><br/>
 				<h4>[${liveWarningData.reports.sub.title}]</h4><br/>
 				${liveWarningData.reports.sub.context}`
-				+`<br/><br/><br/>
-				<h4>[${liveWarningData.reports.news.title}]</h4><br/>
-				${liveWarningData.reports.news.context.split('<br /><br />').join('<br/><br/>').split('<br />').join('').split(`( 기상 현황과 전망 )`).join(``)}`
 				//<br/><h2>[실시간 기상정보]</h2>
 				+`<br/><br/><br/>
 				<h4>[${liveWarningData.reports.info.title}]</h4><br/>
@@ -1739,7 +1931,7 @@ export function LocalWeatherRedraw(){
 				*/
 
 				infoHTML += `</div>`
-				infoHTML += `</div><div class="swiper-scrollbar-i"></div>`
+				infoHTML += `</div><div class="swiper-scrollbar"></div>`
 				sliderBox.style.zIndex = "0"
 				infoFrontBox.insertAdjacentHTML('beforeend', infoHTML)
 				document.getElementById(`day-weather-outline`).style.zIndex = 1
@@ -1749,8 +1941,7 @@ export function LocalWeatherRedraw(){
 					slidesPerView: 'auto',
 					freeMode: true,
 					scrollbar: {
-						el: '.swiper-scrollbar-i',
-						hide: false,
+						el: '.swiper-scrollbar',
 					},
 					mousewheel: true,
 				})
@@ -1759,12 +1950,23 @@ export function LocalWeatherRedraw(){
 
 				// 기상특보 슬라이드 구현
 				globalHTML += `<div class="swiper-slide">`
-				+ `<img src="/resources/gif/warning_0.gif" class=global-weather-img-warn></img>`
+				+ `<img src="${window.armyWeather.private.apiPath}/resources/gif/warning_0.gif" class=global-weather-img-warn></img>`
 				+ `</div>`
 
 				// 기상특보 슬라이드 구현
 				globalHTML += `<div class="swiper-slide">`
-				+ `<img src="/resources/gif/warning_1.gif" class=global-weather-img-warn></img>`
+				+ `<img src="${window.armyWeather.private.apiPath}/resources/gif/warning_1.gif" class=global-weather-img-warn></img>`
+				+ `</div>`
+
+				// 기상청 태풍
+				globalHTML += `<div class="swiper-slide">`
+				+ `<div id="global-weather-title-year" style="color: #7a00ff;"><p>태풍 경로</p></div>`
+				+ `<div style="
+					width:  440px;
+					height:  400px;
+					position:  absolute;
+				"></div>
+				<iframe id="ifrm" name="ifrm" src="http://typ.kma.go.kr/TYPHOON/ko/weather/typhoon_01.jsp" style="width: 898px;height: 817px;position:  relative;top: -287px;left: -170px;z-index: -20;transform: scale(0.6, 0.6);" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" scrolling="no" vspace="0"></iframe>`
 				+ `</div>`
 
 				globalHTML += `</div>
@@ -1783,6 +1985,10 @@ export function LocalWeatherRedraw(){
 					scrollbar: {
 						el: '.swiper-scrollbar'
 					},
+					navigation: {
+						nextEl: '.swiper-button-next',
+						prevEl: '.swiper-button-prev'
+					},
 					on: {
 						slideChange: ()=>{
 							//
@@ -1791,7 +1997,7 @@ export function LocalWeatherRedraw(){
 				})
 			}
 		}catch(e){
-			console.log(e)
+			//console.log(e)
 		}
 	}
 
@@ -1811,6 +2017,17 @@ export function LocalWeatherRedraw(){
 
 		document.getElementById(`day-weather-info2`).innerHTML = liveTemp
 		document.getElementById(`day-weather-rain-info4`).innerHTML = liveAmount
+
+		// 건구 온도에 값 반영
+		if(liveTemp != '-'){
+			//document.getElementById(`heat-question-phone-input`).value = AWSLiveData.temp
+			//document.getElementById(`heat-question-addr-input`).value = AWSLiveData.temp
+			//document.getElementById(`heat-question-rtemp1-input`).value = AWSLiveData.temp
+			
+			document.getElementById(`heat-question-phone-input`).value = ''
+			document.getElementById(`heat-question-addr-input`).value = ''
+			document.getElementById(`heat-question-rtemp1-input`).value = ''
+		}
 	}
 
 	// 기상 특보 정보 출력
@@ -1846,17 +2063,65 @@ export function LocalWeatherRedraw(){
 	// 상황별 자막 출력
 	let subtitleHTML = '<div class=swiper-wrapper>'
 
-	let titleAdder = (subtitleTexts)=>{
-		subtitleHTML += 
-			`<div class="swiper-slide"><div class=subtitle-text>${subtitleTexts}</div></div>`
+	let localAdminAddressName = '지역'
+	try{
+		localAdminAddressName = window.armyWeather.private.address.main.name
+	}catch(e){}
+
+	let titleAdminAdder = (subtitleTexts)=>{
+		try{
+			let areaID = '[' + subtitleTexts.split('[*')[1].split(']')[0] + ']'
+			if(areaID == '[지역]') areaID = `[${localAdminAddressName}-뉴스]`
+			if(areaID == '[전국]') areaID = `[전국-뉴스]`
+
+			let adminID = subtitleTexts.split('[')[2].split(']')[0]
+			let plainText = subtitleTexts.split(']')[2]
+
+			subtitleHTML += 
+				`<div class="swiper-slide"> <a class="subtitle-admin-header-text">${areaID}</a> <a class=subtitle-admin-text>${plainText}</a></div>`
+		}catch(e){}
 	}
 
-	let isNeedToUpdateSubtitle = false
-	// 온도지수별 정보갱신
+	let titleAdder = (subtitleTexts, isHighlight = false)=>{
+		let innerSubTitleHeader = subtitleTexts.split(']')[0]+']'
+		let innerSubTitleContext = subtitleTexts.split('] ')[1]
+		let innerStyleHeaderOption = ``
+		let innerStyleOption = ``
+		if(isHighlight) innerStyleHeaderOption += `style="color:#d6ff00;"`
+		if(isHighlight) innerStyleOption += `style="color:#ffac41;"`
+		subtitleHTML += 
+			`<div class="swiper-slide"><a class=subtitle-header-text ${innerStyleHeaderOption}>${innerSubTitleHeader} </a><a class=subtitle-context-text ${innerStyleOption}> ${innerSubTitleContext}</a></div>`
+	}
 
+	// 최고관리자가 올린 서브타이틀 추가
+	if(window.armyWeather.private.SubtitleData !== null && window.armyWeather.private.SubtitleData !== undefined){
+		for(let highestAdminSubtitle of window.armyWeather.private.SubtitleData){
+			titleAdminAdder(highestAdminSubtitle)
+		}
+	}
+	
+	// 지역관리자가 올린 서브타이틀 추가
+	try{
+		for(let localAdminSubtitle of window.armyWeather.private.localAreaData.data.data.subtitles){
+			titleAdminAdder(localAdminSubtitle)
+		}
+	}catch(e){}
+	
+	// TODO
+
+	let isNeedToUpdateSubtitle = false
+
+	// 온도지수별 정보갱신
 	if(currentTempIndexNum != Number(currentTempIndex) &&
 	   enteritisIndexNum != Number(enteritisIndex)){
 		isNeedToUpdateSubtitle = true
+	}
+	
+	
+	if(oldTextTitle != JSON.stringify(window.armyWeather.private.SubtitleData)){
+		
+		isNeedToUpdateSubtitle = true
+		oldTextTitle = JSON.stringify(window.armyWeather.private.SubtitleData)
 	}
 
 	if(isNeedToUpdateSubtitle){
@@ -1864,39 +2129,49 @@ export function LocalWeatherRedraw(){
 			subtitleSlider.destroy()
 		subtitleBox.innerHTML = ``
 
-		currentTempIndexNum = Number(currentTempIndex)
-		if(!isNaN(currentTempIndexNum)){
-			if(26.5 < currentTempIndexNum){
-			   titleAdder(`[온도지수] 야외활동 하기 좋은 온도 입니다`)
-			}else if(26.5 <= currentTempIndexNum < 29){
-				titleAdder(`[온도지수] 체력저조자 및 신체허약자는 야외할동 각별히 주의`)
-			}else if(29 <= currentTempIndexNum <= 29.5){
-				titleAdder(`[온도지수] 체력적으로 힘든 작업 및 과중한 활동 지양`)
-			}else if(29.6 <= currentTempIndexNum <= 30.5){
-				titleAdder(`[온도지수] 옥외활동 조정 판단, 온열 손상 방지대책 강구`)
-			}else if(30.6 <= currentTempIndexNum <= 31){
-				titleAdder(`[온도지수] 옥외활동 제한 및 중지`)
-			}else if(31.1 <= currentTempIndexNum <= 32){
-				titleAdder(`[온도지수] 1일 6시간 이내의 제한된 활동 가능`)
-			}else if(32 < currentTempIndexNum){
-				titleAdder(`[온도지수] 옥외활동은 필수적인 활동만 실시(아침/저녁활용)`)
-			}
+		let ondojisuHeader = '[더위지수]'
+		switch(document.getElementById(`day-weather-info4`).innerText){
+			case '온도지수:':
+				ondojisuHeader = '[온도지수]'
+			case '더위지수:':
+				let innerCurrentTempIndexNum = Number(document.getElementById(`day-weather-info5`).innerText)
+				if(!isNaN(innerCurrentTempIndexNum)){
+					if(26.5 > innerCurrentTempIndexNum){
+					   titleAdder(`${ondojisuHeader} 야외활동 하기 좋은 지수 입니다`, true)
+					}else if(26.5 <= innerCurrentTempIndexNum && innerCurrentTempIndexNum < 29){
+						titleAdder(`${ondojisuHeader} 체력저조자 및 신체허약자는 야외할동 각별히 주의`, true)
+					}else if(29 <= innerCurrentTempIndexNum && innerCurrentTempIndexNum <= 29.5){
+						titleAdder(`${ondojisuHeader} 체력적으로 힘든 작업 및 과중한 활동 지양`, true)
+					}else if(29.6 <= innerCurrentTempIndexNum && innerCurrentTempIndexNum <= 30.5){
+						titleAdder(`[${ondojisuHeader} 책임자 판단하 옥외활동 조정검토, 온열 손상 방지대책 강구`, true)
+					}else if(30.6 <= innerCurrentTempIndexNum && innerCurrentTempIndexNum <= 31){
+						titleAdder(`${ondojisuHeader} 옥외활동 제한 및 중지`, true)
+					}else if(31.1 <= innerCurrentTempIndexNum && innerCurrentTempIndexNum <= 32){
+						titleAdder(`${ondojisuHeader} 1일 6시간 이내의 제한된 활동 가능`, true)
+					}else if(32 < innerCurrentTempIndexNum){
+						titleAdder(`${ondojisuHeader} 옥외활동은 필수적인 활동만 아침ㆍ저녁시간에 실시`, true)
+					}
+				}
+				break
+			case '체감온도':
+				break
 		}
+		
 
 		// 식중독지수별 정보입력
 		enteritisIndexNum = Number(enteritisIndex)
 		if(!isNaN(enteritisIndexNum)){
 			if(enteritisIndexNum < 35){
 				titleAdder(`[식중독예방] 부식수령시 서늘하고 습기없는 곳에서 2시간 내 처리`)
-				titleAdder(`[식중독예방] 식품 조리 전 필요한 모든 기구와 기기 청결 유지`)
-				titleAdder(`[식중독예방] 수육/어개류 수령 즉시 메뉴별 구분 처리 후 냉동보관`)
+				// titleAdder(`[식중독예방] 식품 조리 전 필요한 모든 기구와 기기 청결 유지`)
+				// titleAdder(`[식중독예방] 수육/어개류 수령 즉시 메뉴별 구분 처리 후 냉동보관`)
 				titleAdder(`[식중독예방] 당일 석식, 익일 조식분 수령 즉시 해동/냉장실 보관`)
 				titleAdder(`[식중독예방] 도마, 칼, 보관용기 등을 종류별로 구별사용 준수`)
 				titleAdder(`[식중독예방] 해동시 흐르는 물 또는 냉장해동 4시간 이내 실시`)
 				titleAdder(`[식중독예방] 조리시 65℃ 이상으로 20분 이상 가열`)
 				titleAdder(`[식중독예방] 조리된 음식은 2시간 이내 급식`)
-				titleAdder(`[식중독예방] 식기 / 컵 / 수저 세척 관심`)
-				titleAdder(`[식중독예방] 취사도구 염소소독`)
+				// titleAdder(`[식중독예방] 식기 / 컵 / 수저 세척 관심`)
+				// titleAdder(`[식중독예방] 취사도구 염소소독`)
 			}else if(35 <= enteritisIndexNum < 70){
 				titleAdder(`[식중독예방] 부식수령시 서늘하고 습기없는 곳에서 1시간 내 처리`)
 				titleAdder(`[식중독예방] 주 2회 이상 취사기구류 소독`)
@@ -1916,10 +2191,11 @@ export function LocalWeatherRedraw(){
 				titleAdder(`[식중독예방] 냉장 / 냉동고 가동상태 수시 확인`)
 				titleAdder(`[식중독예방] 생채류 등 생식 금지 / 1일2회 이상 취사기구류 소독`)
 				titleAdder(`[식중독예방] 두체류(두부, 순두부)는 수령 당일 급식`)
-				titleAdder(`[식중독예방] 급식부대장 책임하 당일수령량 범위내 조정급식`)
+				titleAdder(`[식중독예방] 급식책임자에의한 당일수령량 범위내 조정급식`)
 				titleAdder(`[식중독예방] 조리된 음식은 30분 이내 급식 완료`)
 			}
 		}
+		
 	}
 
 	// 이산화질소 no2 표시갱신
@@ -1996,7 +2272,7 @@ export function LocalWeatherRedraw(){
 	// 대기오염정보 표시 시간 갱신
 	try{
 		document.getElementById(`front-air-refresh-time`).innerText = window.armyWeather.private.liveDustMainData[0]['name']
-	}catch(e){console.log(e)}
+	}catch(e){}
 
 	// 자외선지수 표시갱신
 	let uvValue = '-'
@@ -2013,9 +2289,10 @@ export function LocalWeatherRedraw(){
 					titleAdder(`[자외선지수] 1～2시간 내 햇볕에 노출 시에 피부질환 발생주의`)
 				}else if(uvGrade == '경고'){
 					titleAdder(`[자외선지수] 수십분 이내 햇볕에 노출 시에도 피부질환 발생주의`)
-					titleAdder(`[자외선지수] 오전 10시부터 오후 3시까지 야외활동을 피하는 것을 권고`)
+					titleAdder(`[자외선지수] 10시 ~ 15시까지 야외활동을 자제하는 것을 권고`)
 				}else if(uvGrade == '위험'){
 					titleAdder(`[자외선지수] 수십분 이내 햇볕에 노출 시에도 피부질환 발생주의`)
+					titleAdder(`[자외선지수] 가능한 실내 활동으로 조정`)
 				}
 			}
 		}
@@ -2024,6 +2301,8 @@ export function LocalWeatherRedraw(){
 	let uvColor = uvColorParse(uvValue)
 	let airInfo5 = document.getElementById(`day-air-info5`)
 	let airInfo6 = document.getElementById(`day-air-info6`)
+
+	if(uvValue == 'undefined' || uvValue == undefined) uvValue = '-'
 	airInfo5.innerText = uvValue
 	airInfo5.style.color = uvColor
 	airInfo6.innerText = `(${uvGrade})`
@@ -2048,6 +2327,9 @@ export function LocalWeatherRedraw(){
 		}
 	}catch(e){}
 	let airInfo12 = document.getElementById(`day-air-info12`)
+	
+	if(asthmaGrade == null || asthmaGrade == undefined)
+		asthmaGrade = `-`
 	airInfo12.innerText = `${asthmaGrade}`
 	airInfo12.style.color = generalColorParse(asthmaGrade, true)
 
@@ -2072,6 +2354,8 @@ export function LocalWeatherRedraw(){
 		}
 	}catch(e){}
 	let airInfo18 = document.getElementById(`day-air-info18`)
+	if(strokeGrade == null || strokeGrade == undefined)
+		strokeGrade = `-`
 	airInfo18.innerText = `${strokeGrade}`
 	airInfo18.style.color = generalColorParse(strokeGrade, true)
 
@@ -2097,6 +2381,12 @@ export function LocalWeatherRedraw(){
 				titleAdder(`[불쾌지수] 더위에 취약한 사람들은 야외활동 자제필요`)
 				titleAdder(`[불쾌지수] 수분을 미리 지속적으로 충분히 섭취필요`)
 			}
+		}
+
+		// 이슬점온도계 +10도로 습구 온도에 값 반영
+		if(!isNaN(CITYLiveData.dewPoint)){
+			//document.getElementById(`heat-question-name-input`).value = Number(CITYLiveData.dewPoint)+10
+			document.getElementById(`heat-question-name-input`).value = ''
 		}
 	}catch(e){}
 	document.getElementById(`day-weather-temp-info4`).innerText = viewDistance
@@ -2126,6 +2416,13 @@ export function LocalWeatherRedraw(){
 	airInfo14.innerText = `(${forestGrade})`
 	airInfo14.style.color = forestColor
 
+	// 산불지수 공지
+	if(Number(forestValue) >= 66){
+		titleAdder(`[산불위험지수] 대형산불로 확산될 우려가 인정되는 경우`)
+	}else if(Number(forestValue) >= 86){
+		titleAdder(`[산불위험지수] 대형 산불로 확산될 개연성이 높다고 인정되는 경우`)
+	}
+
 	// 생활날씨 슬라이더 구현
 	let localAirBoxType = document.getElementById(`local-air-box-type`)
 	let airSliderBox = document.getElementById(`local-air-slider-box`)
@@ -2149,10 +2446,10 @@ export function LocalWeatherRedraw(){
 			<br>
 			<img class="local-weather-context-img" src="resources/icons/pack-1/21.png" style="opacity:  0;height: 48px;"></img><br>
 			<a class="local-weather-context-sub" style="top: 4px;">날씨</a><br>
-			<a class="local-weather-context-sub">식중독지수</a><br>
-			<a class="local-weather-context-sub">불쾌지수</a><br>
-			<a class="local-weather-context-sub">열지수</a><br>
-			<a class="local-weather-context-sub">자외선지수</a><br>
+			<a class="local-weather-context-sub" style="font-size: 13px;">식중독지수</a><br>
+			<a class="local-weather-context-sub" style="font-size: 15px;">불쾌지수</a><br>
+			<a class="local-weather-context-sub" style="font-size: 14px;">열지수</a><br>
+			<a class="local-weather-context-sub" style="font-size: 14px;">자외선지수</a><br>
 			<a class="local-weather-context-sub">폐질환지수</a><br>
 			<a class="local-weather-context-sub">뇌졸중지수</a><br>`
 
@@ -2166,29 +2463,29 @@ export function LocalWeatherRedraw(){
 
 				// 열지수
 				let heatIndex = (weeklyHeatindex.length == 0) ? '-' : weeklyHeatindex[targetHour]
-				if(heatIndex == null) heatIndex = `-`
+				if(heatIndex == null || heatIndex == undefined || heatIndex =='null') heatIndex = `-`
 
 				// 식중독지수
 				let enteritis = (weeklyEnteritis.length == 0) ? '-' : weeklyEnteritis[currentAddedDateCount]
-				if(enteritis == null) enteritis = `-`
+				if(enteritis == null || enteritis == 'null') enteritis = `-`
 
 				// 자외선지수
 				let uvIndex = (weeklyUv.length == 0) ? '-' : weeklyUv[currentAddedDateCount]
-				if(uvIndex == null) uvIndex = `-`
+				if(uvIndex == null || uvIndex == 'null') uvIndex = `-`
 				
 				// 불쾌지수
 				let discomfortIndex = (weeklyDiscomfort.length == 0) ? '-' : weeklyDiscomfort[currentAddedDateCount]
-				if(discomfortIndex == null) discomfortIndex = `-`
+				if(discomfortIndex == null || discomfortIndex == 'null') discomfortIndex = `-`
 				
 				// 폐질환지수
 				let innerAsthma = (weeklyAsthma.length == 0) ? '-' : weeklyAsthma[currentAddedDateCount]
 				if(innerAsthma == '매우높음') innerAsthma = '위험'
-				if(innerAsthma == null) innerAsthma = `-`
+				if(innerAsthma == null || innerAsthma == 'null') innerAsthma = `-`
 
 				// 뇌졸중지수
 				let innerStroke = (weeklyStroke.length == 0) ? '-' : weeklyStroke[currentAddedDateCount]
 				if(innerStroke == '매우높음') innerStroke = '위험'
-				if(innerStroke == null) innerStroke = `-`
+				if(innerStroke == null || innerStroke == 'null') innerStroke = `-`
 
 				let nextDate = moment(currentDate).add(currentAddedDateCount, 'days').format('M/D')
 				let currentWeekDay = ''
@@ -2220,10 +2517,10 @@ export function LocalWeatherRedraw(){
 				weatherHTML += `<br>`
 				weatherHTML += `<img class=local-weather-context-img src="${getWeatherIcon(dailyData.hour, dailyData.cloudKR)}" class=day-status-img></img><br>`
 				weatherHTML += `<a class="local-weather-context-sub-bold" style="top: 4px;">${(dailyData.cloudKR).split(' ').join('')}` + `</a><br>`
-				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${enteritisColor}">${enteritis}` + `</a><br>`
-				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${discomfortIndexColor}">${discomfortIndex}` + `</a><br>`
-				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${heatIndexColor}">${heatIndex}` + `</a><br>`
-				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${uvIndexColor}">${uvIndex}` + `</a><br>`
+				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${enteritisColor};font-size: 18px;">${enteritis}` + `</a><br>`
+				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${discomfortIndexColor};font-size: 18px;">${discomfortIndex}` + `</a><br>`
+				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${heatIndexColor};font-size: 18px;">${heatIndex}` + `</a><br>`
+				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${uvIndexColor};font-size: 18px;">${uvIndex}` + `</a><br>`
 				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${innerAsthmaColor}">${innerAsthma}` + `</a><br>`
 				weatherHTML += `<a class="local-weather-context-sub-bold" style="color:${innerStrokeColor}">${innerStroke}` + `</a><br>`
 				weatherHTML += `</div></div>`
@@ -2257,9 +2554,11 @@ export function LocalWeatherRedraw(){
 				infoImgBox.style.zIndex = 0
 				infoImgBox.style.height = 'auto'
 				upwardButton.style.zIndex = 1
+				upwardButton.style.opacity = 1
 
 				infoImgSlider = new Swiper('.info-img-slider', {
 						slidesPerView: 'auto',
+						lazy: true,
 						centeredSlides: false,
 						grabCursor: true,
 						autoHeight: true,
@@ -2269,13 +2568,24 @@ export function LocalWeatherRedraw(){
 							type: 'progressbar'
 						}
 				})
+				infoImgSlider.lazy.loadInSlide(0)
+				infoImgSlider.lazy.loadInSlide(1)
+				infoImgSlider.lazy.loadInSlide(2)
+				infoImgSlider.lazy.loadInSlide(3)
+				infoImgSlider.lazy.loadInSlide(4)
+				infoImgSlider.lazy.loadInSlide(5)
+				infoImgSlider.lazy.loadInSlide(6)
+				infoImgSlider.lazy.loadInSlide(7)
+				infoImgSlider.lazy.loadInSlide(8)
+				infoImgSlider.lazy.loadInSlide(9)
 			}else{
 				descriptionButtonInfo.innerText = '기상상식'
-				healthPannel.style.height = 700
+				healthPannel.style.height = 840
 				infoImgBox.style.opacity = 0
 				infoImgBox.style.zIndex = -1
 				infoImgBox.style.height = 0
 				upwardButton.style.zIndex = -1
+				upwardButton.style.opacity = 0
 			}
 		}
 	}catch(e){}
@@ -2317,6 +2627,26 @@ export function LocalWeatherRedraw(){
 			disableOnInteraction: false
 		},
 	})
+
+	// 추측정보로 체감온도 및 온도지수 예비계산 실행
+	HeatCalculate()
+	
+	// 마지막 전파인원 정보 출력
+	let reporterID = '-'
+	let reportedTime = '-'
+	try{
+		if(window.armyWeather.private.localAreaData.data.data.reportedTime !== undefined
+		  && window.armyWeather.private.localAreaData.data.data.reportedTime !== null)
+			reportedTime = window.armyWeather.private.localAreaData.data.data.reportedTime
+
+		if(reportedTime !== '-')
+			reportedTime = moment(reportedTime).format('H')
+
+		if(window.armyWeather.private.localAreaData.data.account !== undefined
+		  && window.armyWeather.private.localAreaData.data.account !== null)
+			reporterID = window.armyWeather.private.localAreaData.data.account
+	}catch(e){}
+	document.getElementById(`heat-reporter-info`).innerText = `기상알림: ${reporterID} (${reportedTime}시 기준)`
 }
 
 export function LocalWeatherDataLoader(schema){
@@ -2328,6 +2658,11 @@ export function LocalWeatherDataLoader(schema){
 				if(needToLoadCount == 0){
 					isLoaded = true
 					LocalWeatherRedraw()
+					
+					if(typeof registeredUpdateCallback =='function'){
+						registeredUpdateCallback()
+						registeredUpdateCallback = null
+					}
 					break
 				}
 			}
@@ -2338,7 +2673,8 @@ export function LocalWeatherDataLoader(schema){
 }
 
 
-export function LocalWeatherUpdate (){
+export function LocalWeatherUpdate (updateCallback){
+	registeredUpdateCallback = updateCallback
 
 	// 만약 기본 주소가 설정되어 있지 않은 상태라면
 	// 아이피 주소를 기반으로 좌표를 찾아낸 후
@@ -2389,6 +2725,13 @@ export function LocalWeatherUpdate (){
 
 		LocalWeatherDataLoader({liveWeatherData})
 	})
+
+	API.call('/api/areadata-read', {
+		cell: window.armyWeather.private.address.main.cell
+	}, (localAreaData)=>{
+		LocalWeatherDataLoader({localAreaData})
+	})
+
 	API.call('/api/weather', {
 		x: Number(window.armyWeather.private.address.main.lat),
 		y: Number(window.armyWeather.private.address.main.long),
@@ -2495,8 +2838,10 @@ export function LocalWeatherUpdate (){
 	})
 
 	API.call('/api/warning', {}, (liveWarningData)=>{
-
 		LocalWeatherDataLoader({liveWarningData})
+	})
+	API.call('/api/subtitle', {}, (SubtitleData)=>{
+		LocalWeatherDataLoader({SubtitleData})
 	})
 
 	API.call('/api/uv', {

@@ -54,7 +54,7 @@
 	<body>
 		<div id=app>
 			<!-- 최초 표시할 이미지  -->
-			<div id="splash" style="display: block;background: url(&quot;resources/images/splash.png&quot;) center center / auto 100% no-repeat;">
+			<div id="splash" class="unselectable" style="display: block;background: url(&quot;resources/images/splash.png&quot;) center center / auto 100% no-repeat;">
 				<div style="
 					position:  relative;
 					left: 10px;
@@ -65,7 +65,7 @@
 						height: 54px;
 						top: 17px;
 						left: 7px;
-						-webkit-animation: spinoff 1.8s infinite linear;
+						-webkit-animation: spinoff 3.5s infinite linear;
 					">
 					<a id="menu-logo-info" style="
 						position:  absolute;
@@ -74,149 +74,12 @@
 					"><br>ARMY<br>WEATHER</a>
 				</div>
 			</div>
-			<div id="splash-back" style="position: relative;width: 100%;height: 100%;background-color: rgb(38, 59, 86);z-index: 2;display: block;"></div>
+			<div id="splash-back" style="position: fixed;width: 100%;height: 100%;background-color: rgb(38, 59, 86);z-index: 2;display: block;"></div>
 
 			<!-- 잠시 기다려주세요 스피너  -->
 			<div id=spinner class="unselectable">
 				<div class="spinner"></div>
 				<a id=spinner-popup-text>잠시 기다려주세요...</a>
-			</div>
-
-			<!-- 팝업 공간  -->
-			<div id=popup>
-
-				<!-- 로그인창 팝업  -->
-				<div id=login-question class="unselectable">
-					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
-					<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
-					<div id="login-question-info1">
-						<a id="login-question-info2">"ARMY-WEATHER"</a>
-						<a id="login-question-info3">
-							<br>서비스를 이용하시려면<br>회원가입 또는 접속을 해주세요.
-						</a>
-					</div>
-					<div id='login-question-register-or-unregister' class='login-question-register-or-unregister animated infinite updown'>
-						<a id='login-question-register-or-unregister-info1' class=login-question-register-or-unregister-info1>가입하기</a>
-					</div>
-					<div id='login-question-login-or-logout' class='login-question-login-or-logout animated infinite updown'>
-						<a id='login-question-login-or-logout-info1' class=login-question-login-or-logout-info1>접속하기</a>
-					</div>
-					<div id=login-question-id class='login-question-info'>아이디</div>
-					<input id=login-question-id-input  class='login-question-input'></input>
-					<div id=login-question-pw class='login-question-info'>암호</div>
-					<input id=login-question-pw-input type="password" class='login-question-input'></input>
-					<br><a id="login-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
-					<div id=login-question-close class='question-close'>
-						<a class="question-close-info">X</a>
-					</div>
-				</div>
-
-				<!-- 가입시 추가정보 입력요청 팝업  -->
-				<div id=register-question class="unselectable">
-					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
-					<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
-					<div id="login-question-info1">
-						<a id="login-question-info2">"ARMY-WEATHER"</a>
-						<a id="login-question-info3">
-							<br>회원가입을 요청하시려면<br>추가정보를 입력 해주세요.
-						</a>
-					</div>
-					<div id="register-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 443px;border-color: rgba(23, 23, 23, 0.43);">
-						<a id="register-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: rgba(23, 23, 23, 0.43);">신청하기</a>
-					</div>
-					<div id="register-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 443px;border-color: rgba(23, 23, 23, 0.43);">
-						<a id="register-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: rgba(23, 23, 23, 0.43);">취소하기</a>
-					</div>
-
-					<div id="register-question-area" class="login-question-info" style="left: -7px;">관리지역</div>
-					<div id="register-question-area-input" class="login-question-input" style="
-						width: 175px;
-						font-size: 12px;
-						left: 77px;
-						top: -28px;
-					">터치시 권한 요청할 지역선택 가능</div>
-					<div id=register-question-name class='login-question-info'>이름</div>
-					<input id=register-question-name-input  class='login-question-input'></input>
-					<div id=register-question-addr class='login-question-info'>근무지</div>
-					<input id="register-question-addr-input" class="login-question-input" placeholder="부대/직장명을 입력해주세요." style="
-						font-size: 14px;
-						margin-top: 2px;
-					">
-					<div id=register-question-phone class='login-question-info'>연락처</div>
-					<input id=register-question-phone-input class='login-question-input'></input>
-					<br><a id="register-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
-					<div id=register-question-close class='question-close'>
-						<a class="question-close-info">X</a>
-					</div>
-				</div>
-
-				<!-- 가입시 추가정보 입력요청 팝업  -->
-				<div id="heat-question" class="unselectable" style="display: block; background: rgb(81, 92, 99);">
-					<img class="pannel-ribbon" src="/resources/icons/ribbon.png">
-					<br>
-					<div id="login-question-info1">
-						<a id="login-question-info2">"ARMY-WEATHER"</a>
-						<a id="login-question-info3">
-							<br>온도지수 자동계산기<br></a>
-					</div>
-					<div id="heat-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 468px;border-color: rgba(23, 23, 23, 0.43);background: #f5cf95;">
-						<a id="heat-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: rgb(90, 90, 90);">계산하기</a>
-					</div>
-					<div id="heat-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 467px;border-color: rgba(23, 23, 23, 0.43);background: #f5cf95;">
-						<a id="heat-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: rgb(90, 90, 90);">전파하기</a>
-					</div>
-
-					<div id="heat-question-phone" class="login-question-info" style="left: 6px;top: -7px;">건구온도</div>
-					<input id="heat-question-phone-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;left: -99px;top: 4px;">
-					<div id="heat-question-name" class="login-question-info" style="left: 107px;top: -68px;">습구온도</div>
-					<input id="heat-question-name-input" value="0" type="number" class="login-question-input" style="text-align: center;font-size: 18px;margin-top: 2px;width: 76px;left: 0px;top: -59px;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);">
-					<div id="heat-question-addr" class="login-question-info" style="left: 204px;top: -131px;">흑구온도</div>
-					<input id="heat-question-addr-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;top: -120px;left: 99px;">
-					<div id="heat-question-temp" class="login-question-info" style="left: 70px;top: -95px;font-size: 20px;width: 167px;color: #fbf621;">계산된 온도지수</div>
-					<input id="heat-question-temp-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgb(2, 26, 150);top: -87px;text-align:  center;width: 102px;left: 0px;">
-
-					<div class="login-question-info" style="left: 4px;top: -5px;">기온</div>
-					<input id="heat-question-rtemp1-input" value="0" type="number" class="login-question-input" style="text-align: center;width: 76px; left: -100px; top: 3px; color: rgba(23, 23, 23, 0.43);">
-					<div class="login-question-info" style="left: 102px;top: -66px;">바람</div>
-					<input id="heat-question-rtemp2-input" value="0" type="number" class="login-question-input" style="text-align: center;top: -58px; width: 76px; left: -2px; color: rgba(23, 23, 23, 0.43);">
-					<div class="login-question-info" style="left: 203px;top: -128px;color: #fbf621;">체감온도</div>
-					<input id="heat-question-rtemp3-input" value="0" type="number" class="login-question-input" style="text-align: center;width: 76px;left: 100px;top: -120px;color: rgb(2, 26, 150);text-align:  center;">
-
-					<br>
-					<div id="heat-question-close" class="question-close">
-						<a class="question-close-info">X</a>
-					</div>
-				<a id="login-question-info3" style="
-    top: -244px;
-">
-					<br>체감온도 자동계산기<br></a>
-					<div class="login-question-info" style="width: 10px;left: 70px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
-					<div class="login-question-info" style="width: 10px;left: 170px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
-					<div class="login-question-info" style="width: 10px;left: 268px;top: 166px;color: #ff9811;position:  absolute;">℃</div>
-					<div class="login-question-info" style="width: 10px;left: 70px;top: 420px;color: #ff9811;position:  absolute;">℃</div>
-					<div class="login-question-info" style="width: 10px;left: 166px;top: 418px;color: #ff9811;position:  absolute;">㎧</div>
-					<div class="login-question-info" style="width: 10px;left: 268px;top: 420px;color: #ff9811;position:  absolute;">℃</div>
-				</div>
-
-				<!-- 로그인창 팝업  -->
-				<div id=address-question class="unselectable">
-					<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
-					<div id=address-question-close class='question-close'>
-						<a class="question-close-info">X</a>
-					</div><br><br>
-					<div id="address-type-bar">
-						<div id="address-select-input" class="address-type-item">직접입력</div>
-						<div id="address-select-list" class="address-type-item">목록검색</div>
-					</div>
-					<input id="address-input" class='address-input' value="" placeholder="찾으려는 주소를 여기 입력합니다"></input>
-					<div id=address-box>
-						<div id=address-slider class=popup-address-slider>
-							<!-- 주소선택 공간  -->
-						</div>
-					</div>
-					<div id='address-item-remove'><a>설정한 주소 삭제하기</a></div>
-				</div>
-
 			</div>
 
 			<!-- 메뉴바 공간  -->
@@ -236,9 +99,8 @@
 				</div>
 
 				<!-- 메뉴 - 지수작성 버튼  -->
-				<div id=account-logo class="animated infinite smallwave unselectable">
-					<img id=menu-account-icon src="resources/icons/menu.png" width="30px" height="30px"></img>
-					<a id=menu-account-info>온도지수전파</a>
+				<div id="account-logo" class="animated infinite smallwave unselectable">
+					<img id="menu-account-icon" src="resources/icons/alarm.png" width="30px" height="30px"><a id="menu-account-info">기상알람</a>
 				</div>
 
 				<!-- 위치 주소 선택 버튼  -->
@@ -256,7 +118,7 @@
 			</div>
 
 			<!-- 자막 공간  -->
-			<div id=subtitle>
+			<div id=subtitle class="unselectable">
 				<div class=subtitle-pannel>
 					<div id=subtitle-address-box class="swiper-container subtitle-address-slider">
 						<!-- 위치 주소 슬라이더  -->
@@ -265,50 +127,283 @@
 			</div>
 
 			<div id=container>
+					<!-- 팝업 공간  -->
+				<div id=popup>
+					<!-- 로그인창 팝업  -->
+					<div id=login-question class="unselectable">
+						<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+						<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
+						<div id="login-question-info1">
+							<a id="login-question-info2">"ARMY-WEATHER"</a>
+							<a id="login-question-info3">
+								<br>서비스를 이용하시려면<br>회원가입 또는 접속을 해주세요.
+							</a>
+						</div>
+						<div id='login-question-register-or-unregister' class='login-question-register-or-unregister animated infinite updown'>
+							<a id='login-question-register-or-unregister-info1' class=login-question-register-or-unregister-info1>가입하기</a>
+						</div>
+						<div id='login-question-login-or-logout' class='login-question-login-or-logout animated infinite updown'>
+							<a id='login-question-login-or-logout-info1' class=login-question-login-or-logout-info1>접속하기</a>
+						</div>
+						<div id=login-question-id class='login-question-info'>아이디</div>
+						<input id=login-question-id-input  class='login-question-input'></input>
+						<div id=login-question-pw class='login-question-info'>암호</div>
+						<input id=login-question-pw-input type="password" class='login-question-input'></input>
+						<br><a id="login-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
+						<div id=login-question-close class='question-close'>
+							<a class="question-close-info">X</a>
+						</div>
+					</div>
+
+					<!-- 가입시 추가정보 입력요청 팝업  -->
+					<div id=register-question class="unselectable">
+						<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+						<img id=login-question-img class='animated infinite updown' src='/resources/icons/come-in.png'></img><br>
+						<div id="login-question-info1">
+							<a id="login-question-info2">"ARMY-WEATHER"</a>
+							<a id="login-question-info3">
+								<br>회원가입을 요청하시려면<br>추가정보를 입력 해주세요.
+							</a>
+						</div>
+						<div id="register-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 435px;border-color: rgba(23, 23, 23, 0.43);">
+							<a id="register-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: rgba(23, 23, 23, 0.43);">신청하기</a>
+						</div>
+						<div id="register-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 435px;border-color: rgba(23, 23, 23, 0.43);">
+							<a id="register-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: rgba(23, 23, 23, 0.43);">취소하기</a>
+						</div>
+
+						<div id="register-question-area" class="login-question-info" style="left: -7px;">관리지역</div>
+						<div id="register-question-area-input" class="login-question-input" style="
+							width: 175px;
+							font-size: 12px;
+							left: 77px;
+							top: -28px;
+						">터치시 권한 요청할 지역선택 가능</div>
+						<div id=register-question-name class='login-question-info'>이름</div>
+						<input id=register-question-name-input  class='login-question-input' placeholder="성함을 입력해주세요."></input>
+						<div id=register-question-addr class='login-question-info'>근무지</div>
+						<input id="register-question-addr-input" class="login-question-input" placeholder="부대/직장명을 입력해주세요." style="
+							font-size: 14px;
+							margin-top: 2px;
+						">
+						<div id=register-question-phone class='login-question-info'>연락처</div>
+						<input id="register-question-phone-input" class="login-question-input" placeholder="연락가능한 전화번호를 남겨주세요." style="border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);font-size:  11.5px;top: -28px;">
+						<br><a id="register-question-info4" class="login-question-info4">ⓘ 존재하지 않는 ID입니다.</a>
+						<div id=register-question-close class='question-close'>
+							<a class="question-close-info">X</a>
+						</div>
+					</div>
+
+					<!-- 가입시 추가정보 입력요청 팝업  -->
+					<div id="heat-question" class="unselectable" style="display: block; background: rgb(81, 92, 99);">
+						<img class="pannel-ribbon" src="/resources/icons/ribbon.png">
+
+						<div>
+							<div id=alarm-switch style="
+								position:  absolute;
+								width: 65px;
+								height: 63px;
+								left: 9px;
+								top: 34px;
+								border-color: #fff;
+								border-width: 1px;
+								border-radius:  15px;
+								border-style: dashed;
+								z-index: 3;
+							"><img src="resources/icons/alarm.png" width="30px" height="30px" style="
+								position: relative;
+								top: 7px;
+								z-index: -1;
+							"><img src="resources/icons/alarm.png" width="30px" height="30px" style="
+								position:  absolute;
+								left: 17px;
+								top: 10px;
+								z-index:  -2;
+								filter: invert(1);
+							"><br><a style="
+								font-size: 12px;
+								top: 42px;
+								position: absolute;
+								width:  50px;
+								left: 5px;
+								z-index: -1;
+							">알람켜짐</a></div>
+
+							<br>
+							<div id="login-question-info1">
+								<a id="login-question-info2" style="
+									position:  relative;
+									top: 24px;
+									font-size: 18px;
+									color: #ffffff;
+									left: 10px;
+									border-bottom: none;
+								">온도지수 자동계산기</a>
+							</div>
+							<div id="heat-question-register-or-unregister" class="login-question-register-or-unregister animated infinite updown" style="top: 500px;border-color: rgba(23, 23, 23, 0.43);background: #67a9b5;">
+								<a id="heat-question-register-or-unregister-info1" class="login-question-register-or-unregister-info1" style="color: #fff;">입력초기화</a>
+							</div>
+							<div id="heat-question-login-or-logout" class="login-question-login-or-logout animated infinite updown" style="top: 500px;border-color: rgba(23, 23, 23, 0.43);background: #67a9b5;">
+								<a id="heat-question-login-or-logout-info1" class="login-question-login-or-logout-info1" style="color: #fff;">전파하기</a>
+							</div>
+
+							<div id="heat-question-phone" class="login-question-info" style="left: 6px;top: -7px;">건구온도</div>
+							<input id="heat-question-phone-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;left: -99px;top: 4px;padding-right: 17px;">
+							<div id="heat-question-name" class="login-question-info" style="left: 107px;top: -68px;">습구온도</div>
+							<input id="heat-question-name-input" value="0" type="number" class="login-question-input" style="text-align: center;font-size: 18px;margin-top: 2px;width: 76px;left: 0px;top: -59px;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);padding-right: 17px;">
+							<div id="heat-question-addr" class="login-question-info" style="left: 204px;top: -131px;">흑구온도</div>
+							<input id="heat-question-addr-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgba(23, 23, 23, 0.43);width: 76px;top: -120px;left: 99px;padding-right: 17px;">
+							<div id="heat-question-temp" class="login-question-info" style="left: 70px;top: -95px;font-size: 20px;width: 167px;color: #deff36;text-shadow: 2px 2px #2f2f2f;">계산된 온도지수</div>
+							<input id="heat-question-temp-input" value="0" type="number" class="login-question-input" style="text-align: center;border-color: rgba(23, 23, 23, 0.43);color: rgb(2, 26, 150);top: -87px;text-align:  center;width: 102px;left: 0px;padding-right: 17px;" disabled>
+
+							<div class="login-question-info" style="left: 4px;top: -5px;">기온</div>
+							<input id="heat-question-rtemp1-input" value="0" class="login-question-input" style="text-align: center;width: 76px; left: -100px; top: 3px; color: rgba(23, 23, 23, 0.43);padding-right: 17px;">
+							<div class="login-question-info" style="left: 102px;top: -66px;">바람</div>
+							<input id="heat-question-rtemp2-input" value="0" type="number" class="login-question-input" style="text-align: center;top: -58px; width: 76px; left: -2px; color: rgba(23, 23, 23, 0.43);padding-right: 17px;">
+							<div class="login-question-info" style="left: 203px;top: -128px;color: #deff36;text-shadow:  2px 2px #2f2f2f;">체감온도</div>
+							<input id="heat-question-rtemp3-input" value="0" type="number" class="login-question-input" style="text-align: center;width: 76px;left: 100px;top: -120px;color: rgb(2, 26, 150);text-align:  center;padding-right: 17px;" disabled>
+
+							<br>
+							<div id="heat-question-close" class="question-close">
+								<a class="question-close-info">X</a>
+							</div>
+							<a id="login-question-info3" style="top: -244px;">
+							<br>체감온도 자동계산기<br></a>
+							<div class="login-question-info" style="width: 10px;left: 70px;top: 166px;color: #67a9b5;position:  absolute;">℃</div>
+							<div class="login-question-info" style="width: 10px;left: 170px;top: 166px;color: #67a9b5;position:  absolute;">℃</div>
+							<div class="login-question-info" style="width: 10px;left: 268px;top: 166px;color: #67a9b5;position:  absolute;">℃</div>
+							<div class="login-question-info" style="width: 10px;left: 70px;top: 420px;color: #67a9b5;position:  absolute;">℃</div>
+							<div class="login-question-info" style="width: 10px;left: 166px;top: 418px;color: #67a9b5;position:  absolute;">㎧</div>
+							<div class="login-question-info" style="width: 10px;left: 268px;top: 420px;color: #a1e832;position:  absolute;text-shadow: 1px 2px #2f2f2f;">℃</div>
+							<div class="login-question-info" style="width: 10px;left: 180px;top: 262px;font-size: 36px;color: #deff36;position:  absolute;text-shadow: 2px 2px #2f2f2f;">˚</div>
+							<div style="
+								position:  absolute;
+								width: 287px;
+								height: 198px;
+								top: 111px;
+								left: 6px;
+								border-radius:  15px;
+								border-color:  #fff;
+								border-style: dashed;
+								border-width: 1;
+								z-index: -1;
+							"> </div>
+							<div style="
+								position:  absolute;
+								width: 287px;
+								height: 160px;
+								top: 325px;
+								left: 6px;
+								border-radius:  15px;
+								border-color:  #fff;
+								border-style: dashed;
+								border-width: 1;
+								z-index: -1;
+							">
+							</div>
+						</div>
+						<div class="login-question-info" style="left: 6px;top: -407px;position:  relative;font-size: 12px;">(15~40℃)</div>
+						<div class="login-question-info" style="left: 103px;top: -420px;position:  relative;font-size: 12px;">(5~35℃)</div>
+						<div class="login-question-info" style="left: 203px;top: -433px;position:  relative;font-size: 12px;">(25~50℃)</div>
+						<div class="login-question-info" style="left: 6px;top: -192px;position:  relative;font-size: 12px;">(-30~10℃)</div>
+						<div class="login-question-info" style="left: 103px;top: -205px;position:  relative;font-size: 12px;">(0~20㎧)</div>
+						<div style="
+							position:  relative;
+							top: -598px;
+							left: 13px;
+							text-align: left;
+						"><a id="heat-reporter-info" style="
+							position:  relative;
+							left: 72px;
+							font-size: 12px;
+							color:  #fff;
+						">마지막 전파인원: - (-시 기준)</a></div>
+					</div>
+
+					<!-- 주소검색창 팝업  -->
+					<div id=address-question class="unselectable">
+						<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+						<div id=address-question-close class='question-close'>
+							<a class="question-close-info">X</a>
+						</div><br><br>
+						<div id="address-type-bar">
+							<div id="address-select-input" class="address-type-item">직접입력</div>
+							<div id="address-select-list" class="address-type-item">목록검색</div>
+						</div>
+						<input id="address-input" class='address-input' value="" placeholder="찾으려는 주소를 여기 입력합니다"></input>
+						<div id=address-box>
+							<div id=address-slider class=popup-address-slider>
+								<!-- 주소선택 공간  -->
+							</div>
+						</div>
+						<div id='address-item-remove'><a>설정한 주소 삭제하기</a></div>
+					</div>
+
+					<!-- 관리자창 팝업  -->
+					<div id=manage-question class="unselectable">
+						<img class='pannel-ribbon' src='/resources/icons/ribbon.png'></img>
+						<div id=manage-question-close class='question-close'>
+							<a class="question-close-info">X</a>
+						</div><br><br>
+						<div id="manage-type-bar">
+							<div id="manage-select-input" class="manage-type-item">승인대기중</div>
+							<div id="manage-select-list" class="manage-type-item">뉴스목록</div>
+							<div id="manage-select-admins" class="manage-type-item">관리자목록</div>
+						</div>
+						<div id=manage-box>
+							<div id=manage-slider class=popup-manage-slider>
+								<!-- 주소선택 공간  -->
+							</div>
+						</div>
+						<input id="manage-input" class='manage-input' value="" placeholder="전송하려는 뉴스 내용을 여기에 입력합니다."></input>
+						<div id='manage-item-add'><a>기상뉴스 알림</a></div>
+					</div>
+
+				</div>
 				<div id=life>
 					<div name=content class="unselectable">
-						<div id=life-box>
+						<div id=life-box class="unselectable">
 							<div id=day-weather-moon>
 								<div id="day-weather-moon-outline"></div>
 								<div class=day-weather-template-5>
 									<img src="resources/icons/sunset.png"></img><br>
 									<a id=day-weather-sun-rise-info3 class=day-weather-temp-info>BMNT: </a>
-									<a id=day-weather-sun-rise-info4 class=day-weather-temp>계산중..</a><br>
+									<a id="day-weather-sun-rise-info4" class="day-weather-temp" style="color: #62e7ff;">계산중..</a><br>
 									<a id=day-weather-sun-set-info3 class=day-weather-temp-info>EENT: </a>
-									<a id=day-weather-sun-set-info4 class=day-weather-temp>계산중..</a>
+									<a id="day-weather-sun-set-info4" class="day-weather-temp" style="color: #62e7ff;">21:08</a><br>
 								</div>
 
 								<div class=day-weather-template-5>
 									<img src="resources/icons/sunrise.png"></img><br>
 									<a id=day-weather-sun-rise-info1 class=day-weather-temp-info>일출: </a>
-									<a id=day-weather-sun-rise-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-sun-rise-info2 class=day-weather-temp style="color: #62e7ff;">계산중..</a><br>
 									<a id=day-weather-sun-set-info1 class=day-weather-temp-info>일몰: </a>
-									<a id=day-weather-sun-set-info2 class=day-weather-temp>계산중..</a>
+									<a id=day-weather-sun-set-info2 class=day-weather-temp style="color: #62e7ff;">계산중..</a>
 								</div>
 
 								<div class=day-weather-template-5>
 									<img src="resources/icons/moonset.png"></img><br>
 									<a id=day-weather-moon-rise-info1 class=day-weather-temp-info>월출: </a>
-									<a id=day-weather-moon-rise-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-moon-rise-info2 class=day-weather-temp style="color: #62e7ff;">계산중..</a><br>
 									<a id=day-weather-moon-set-info6 class=day-weather-temp-info>월몰: </a>
-									<a id=day-weather-moon-set-info7 class=day-weather-temp>계산중..</a>
+									<a id=day-weather-moon-set-info7 class=day-weather-temp style="color: #62e7ff;">계산중..</a>
 								</div>
 
 								<div class=day-weather-template-5>
 									<img src="resources/icons/moon.png"></img><br>
 									<a id=day-weather-moon-set-info1 class=day-weather-temp-info>월광: </a>
-									<a id=day-weather-moon-set-info2 class=day-weather-temp>계산중..</a><br>
+									<a id=day-weather-moon-set-info2 class=day-weather-temp style="color: #62e7ff;">계산중..</a><br>
 									<a id=day-weather-moon-set-info3 class=day-weather-temp-info>무월광: </a>
-									<a id=day-weather-moon-set-info4 class=day-weather-temp>계산중..</a>
+									<a id=day-weather-moon-set-info4 class=day-weather-temp style="color: #62e7ff;">계산중..</a>
 									<a id="day-weather-moon-set-info5" class="day-weather-temp" style="
 										position:  absolute;
 										top: 21px;
-										width: 85px;
-										left: 147px;
+										width: 140px;
+										left: 150px;
 										text-align: left;
 										font-size: 13px;
-										color: #e4c05c;
-									">(초승달)</a>
+										color: #e3e3f1;
+									">(-)</a>
 								</div>
 
 								<div id=calendar-info-slider-box class="calendar-info-slider swiper-container">
@@ -323,7 +418,7 @@
 															<li id="main-month-prev" class="prev">❮</li>
 															<li id="main-month-next" class="next">❯</li>
 															<li><a id="main-current-month">-</a><br>
-																<span style="font-size:18px; color: #e78d18;"><a id="main-current-year">-</a></span>
+																<span style="font-size:18px;color: #e85e47;text-shadow: 1px 2px #000;"><a id="main-current-year">-</a></span>
 															</li>
 														</ul>
 													</div>
@@ -350,7 +445,7 @@
 															<li id="bmnt-month-prev" class="prev">❮</li>
 															<li id="bmnt-month-next" class="next">❯</li>
 															<li><a id="bmnt-current-month">-</a><br>
-																<span style="font-size:18px; color: #e78d18;"><a id="bmnt-current-year">-</a></span>
+																<span style="font-size:18px;color: #e85e47;text-shadow: 1px 2px #000;"><a id="bmnt-current-year">-</a></span>
 															</li>
 														</ul>
 													</div>
@@ -376,7 +471,7 @@
 															<li id="sun-month-prev" class="prev">❮</li>
 															<li id="sun-month-next" class="next">❯</li>
 															<li><a id="sun-current-month">-</a><br>
-																<span style="font-size:18px; color: #e78d18;"><a id="sun-current-year">-</a></span>
+																<span style="font-size:18px;color: #e85e47;text-shadow: 1px 2px #000;"><a id="sun-current-year">-</a></span>
 															</li>
 														</ul>
 													</div>
@@ -402,7 +497,7 @@
 															<li id="moon-month-prev" class="prev">❮</li>
 															<li id="moon-month-next" class="next">❯</li>
 															<li><a id="moon-current-month">-</a><br>
-																<span style="font-size:18px; color: #e78d18;"><a id="moon-current-year">-</a></span>
+																<span style="font-size:18px;color: #e85e47;text-shadow: 1px 2px #000;"><a id="moon-current-year">-</a></span>
 															</li>
 														</ul>
 													</div>
@@ -414,8 +509,8 @@
 														 <div>목</div>
 														 <div>금</div>
 														 <div style="color: #15dbfd;">토</div>
-													<ul id=moon-plan-calendar class="days"></ul>
 													</div>
+													<ul id=moon-plan-calendar class="days"></ul>
 												</div>
 											</div>
 										</div>
@@ -495,7 +590,7 @@
 										<img id=day-weather-status-img src="resources/icons/pack-1/21.png" class=day-status-img></img>
 										<a id=day-weather-info1>현재온도: </a>
 										<a id=day-weather-info2 class=day-weather-temp>-</a><br>
-										<a id=day-weather-info4>온도지수: </a>
+										<a id=day-weather-info4>더위지수: </a>
 										<a id=day-weather-info5 class=day-weather-temp>-</a>
 										<a id=day-weather-info6 class=day-weather-temp-sub>(-시 기준)</a><br>
 										<br><br><br>
@@ -617,7 +712,7 @@
 								</div>
 
 								<div class=day-weather-template-6>
-									<a class=day-weather-temp-info>산불지수: </a>
+									<a class="day-weather-temp-info" style="margin-left:  -16px;">산불지수: </a>
 									<a id=day-air-info13 class=day-weather-temp>-</a>
 									<a id=day-air-info14 class=day-weather-temp-sub>(-)</a><br>
 									<a class=day-weather-temp-info>뇌졸중지수: </a>
@@ -650,6 +745,7 @@
 									left: 163px;
 									font-size: 15px;
 									color: #e78d18;
+    								text-shadow: 1px 1px 1px #000;
 								">[매연오염]</div>
 								<div style="
 									position:  absolute;
@@ -657,6 +753,7 @@
 									left: 163px;
 									font-size: 15px;
 									color: #e78d18;
+    								text-shadow: 1px 1px 1px #000;
 								">[화학오염]</div>
 								<div style="
 									position:  absolute;
@@ -664,6 +761,7 @@
 									left: 163px;
 									font-size: 15px;
 									color: #e78d18;
+    								text-shadow: 1px 1px 1px #000;
 								">[산업오염]</div>
 								<div style="
 									position:  absolute;
@@ -780,6 +878,7 @@
 									left: 163px;
 									font-size: 15px;
 									color: #e78d18;
+    								text-shadow: 1px 1px 1px #000;
 								">[대기오염]</div><div style="
 									position:  absolute;
 									top: 68px;
@@ -880,47 +979,52 @@
 										-->
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total1.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total0.png" style="border-radius: 15px; width: 415px; transition-duration: 300ms; transform: translate3d(0px, 0px, 0px) scale(1); left: 14px; position: relative;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total2.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total1.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total3.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total2.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total4.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total3.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total5.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total4.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total6.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total5.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total7.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total6.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total8.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total7.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<div class="swiper-slide">
 											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
-												<img src="/resources/infos/total9.png" style="border-radius: 15px; width: 415px;">
+												<img data-src="/resources/infos/total8.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
+											</div>
+										</div>
+										<div class="swiper-slide">
+											<div class="swiper-zoom-container" data-swiper-zoom="1.5" style="border-radius: 15px; width: 415px; height:auto">
+												<img data-src="/resources/infos/total9.png" style="border-radius: 15px; width: 415px;" class="swiper-lazy">
 											</div>
 										</div>
 										<!--

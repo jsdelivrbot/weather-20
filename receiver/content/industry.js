@@ -34,10 +34,10 @@ export class Industry{
 	}
 
 	get(database, callback){
-		if(!this.isLoaded){
-			this.preCommandQueue.push(callback)
-			return
-		}
+		//if(!this.isLoaded){
+		//	this.preCommandQueue.push(callback)
+		//	return
+		//}
 
 		database.metadata.get(`life.${this.option.dataId}`, (isSuccess, data)=>{
 			callback(data)
@@ -54,7 +54,7 @@ export class Industry{
 		self.app.post(`/api/${option.dataId}`, (request, response)=>{
 			let requestSchema = request.body
 			if(requestSchema === undefined || requestSchema === null) {
-				Logger.log(`잘못된 유형의 ${option.dataName} 요청발생`)
+				Logger.log(`잘못된 유형의 ${option.dataName} 요청발생`, `[Backend:Industry]`)
 				response.send(null)
 				response.end()
 				return
@@ -73,7 +73,7 @@ export class Industry{
 						response.end()
 						return
 					}
-					
+
 					try{
 						let fullAddress = findAddress(x, y).key.split('.')
 
@@ -84,39 +84,83 @@ export class Industry{
 							areaName = areaName.split('광역').join('')
 							areaName = areaName.split('자치').join('')
 						}
-						let areaData = null
-						
+						// 경상남도
+						// 창원시 의창구
+						// 용지동
 						if(typeof dataSchema.data[0][areaName] == 'undefined'){
+							let areaData = null
 							if(typeof dataSchema.data[0]['전국'][areaName] != 'undefined'){
 								areaData = dataSchema.data[0]['전국'][areaName]
+								//if(option.dataId == 'uv'){
+									//console.log(`전국/${areaName}`)
+									//console.log(areaData)
+								//}
 							}else{
+								//if(option.dataId == 'uv') console.log('예외상황감지')
 								response.send(null)
 								response.end()
 								return
 							}
+							for(let innerDataIndex of Object.keys(areaData)){
+								let itemAreaName = innerDataIndex.split('시')[0] +'시'
+								if(itemAreaName == fullAddress[1]){
+									foundedAreaName = innerDataIndex
+									break
+								}
+							}
 						}else{
-							areaData = dataSchema.data[0][areaName]
+							if(option.dataId == 'uv'){
+								//console.log('부수적처리자료감지')
+								//console.log(dataSchema.data)
+							}
+							foundedAreaName = fullAddress[1]
 						}
 
-						for(let innerDataIndex of Object.keys(areaData)){
-							let itemAreaName = innerDataIndex.split('시')[0] +'시'
-							if(itemAreaName == fullAddress[1]){
-								foundedAreaName = innerDataIndex
-								break
-							}
-						}
 
 						let fullLocalData = []
 						if(foundedAreaName !== null){
+							// 창원시 의창구 -> 창원시
+							if(typeof foundedAreaName.split(' ')[1] != 'undefined')
+								foundedAreaName = foundedAreaName.split(' ')[0]
+
+							//if(option.dataId == 'uv') console.log(`foundedAreaName 존재: ${foundedAreaName}`)
 							for(let pageNum=0;pageNum<=option.maxPageNum;pageNum++){
 								if(typeof dataSchema.data[0][areaName] !== 'undefined'){
-									fullLocalData.push(dataSchema.data[pageNum][areaName][foundedAreaName])
+									if(option.dataId == 'uv'){
+										//console.log(`CASE 1 전송 ${pageNum}/${areaName}/${foundedAreaName}`)
+										
+										//foundedAreaName // 남양주시
+										
+										//경기도 의정부
+									}
+
+									//원본코드
+									//20180708
+									//let targetData = dataSchema.data[pageNum][areaName][foundedAreaName]
+									//fullLocalData.push(targetData)
+									
+									
+									let targetData = dataSchema.data[pageNum][areaName]
+									for(let targetDataItemIndex in targetData){
+										let targetDataItem = targetData[targetDataItemIndex]
+										//foundedAreaName // 의정부시
+										//targetDataItemIndex // 의정부
+										//console.log(`foundedAreaName:${foundedAreaName}, targetDataItemIndex:${targetDataItemIndex}, targetDataItem: ${targetDataItem}`)
+										if(foundedAreaName.indexOf(targetDataItemIndex) !== -1){
+											targetData = targetDataItem
+											break
+										}
+									}
+									fullLocalData.push(targetData)
 								}else{
+									//if(option.dataId == 'uv') console.log('CASE 2 전송')
 									fullLocalData.push(dataSchema.data[pageNum]['전국'][foundedAreaName])
 								}
 							}
 						}else{
+							//if(option.dataId == 'uv') console.log(`foundedAreaName 미존재: ${foundedAreaName}`)
 							for(let pageNum=0;pageNum<=option.maxPageNum;pageNum++){
+								//if(option.dataId == 'uv') console.log('CASE 3 전송')
 								fullLocalData.push(dataSchema.data[pageNum]['전국'][areaName])
 							}
 						}
@@ -198,14 +242,14 @@ export class Industry{
 						encoding: null
 
 					}, (err, response, body)=>{
-						Logger.log(`기상청에서 ${dataName} 지도화용 정보를 받아왔습니다.`)
+						Logger.log(`기상청에서 ${dataName} 지도화용 정보를 받아왔습니다.`, `[Backend:Industry]`)
 
 						// 값 해석을 시작합니다.
 						body = iconv.decode(body, 'EUC-KR').toString()
 						try{
 							self.dataJson = eval(body.split(`var ${self.option.dataJsonName} = `)[1].split(`;`)[0])
 						}catch(e){
-							Logger.log(`기상청에서 받아온 ${dataName} 지도화용 정보를 해석하는데 실패했습니다.`)
+							Logger.log(`기상청에서 받아온 ${dataName} 지도화용 정보를 해석하는데 실패했습니다.`, `[Backend:Industry]`)
 							console.log(e)
 						}
 					})
@@ -217,77 +261,82 @@ export class Industry{
 					encoding: null
 
 				}, (err, response, body)=>{
-					Logger.log(`기상청에서 ${dataName} 정보를 받아왔습니다. (${pageNum}/${maxPageNum})`)
+					Logger.log(`기상청에서 ${dataName} 정보를 받아왔습니다. (${pageNum}/${maxPageNum})`, `[Backend:Industry]`)
 
 					// 값 해석을 시작합니다.
-					body = iconv.decode(body, 'EUC-KR').toString()
-					let parsedBody = body.split('</thead>')[1].split('</table>')[0]
+					try{
+						body = iconv.decode(body, 'EUC-KR').toString()
+						let parsedBody = body.split('</thead>')[1].split('</table>')[0]
 
-					let toppestAreaName = '전국'
-					let areaData = {}
+						let toppestAreaName = '전국'
+						let areaData = {}
 
-					areaData[toppestAreaName]= {}
-					for(let tr of parsedBody.split('<tr>')){
+						areaData[toppestAreaName]= {}
+						for(let tr of parsedBody.split('<tr>')){
 
-						// 도시군별 최상위 값
-						if(tr.indexOf(`<th colspan="6">`) !== -1){
-							let topName = tr.split(`<th colspan="6">`)[1].split('</th>')[0]
-							toppestAreaName = topName
-							areaData[toppestAreaName]= {}
-							continue
-						}
-
-						// 최하위 아이템 값
-						// !:패턴 중요 값이 3개씩 존재
-						tr = tr.split('</tr>')[0]
-
-						let parseTR = tr.split('<th>')
-						for(let itemLevel=0; itemLevel<=parseTR.length-1; itemLevel++){
-							let item = tr.split('<th>')[itemLevel].split('</td>')[0]
-
-							if(typeof item != 'string') continue
-							if(item.indexOf(`nbsp`) != -1) continue
-							if(item.indexOf(`</th>`) == -1) continue
-
-							item = item.split(`\n`).join('').split('</th><td>')
-							areaData[toppestAreaName][item[0]] = item[1]
-						}
-					}
-
-					fullData.push(areaData)
-
-					if(pageNum === maxPageNum){
-						let dataSchema = {
-							timestamp: (new Date()).getTime(),
-							data: fullData,
-							map: self.dataJson
-						}
-						database.metadata.set(`life.${dataId}`, dataSchema)
-
-						if(typeof callback === 'function')
-							callback(dataSchema)
-
-						for(let preCommand of self.preCommandQueue)
-							if(typeof preCommand === 'function')
-								preCommand(dataSchema)
-
-						self.preCommandQueue = []
-						self.isLoaded = true
-						self.isLoading = false
-						Logger.log(`기상청에서 ${dataName} 정보를 모두 받아왔습니다.`)
-						
-						// 모든 글로벌 업데이트가 끝났다면
-						if(isGentlyWork){
-							if(globalUpdateQueue.length == 0){
-								isGlobalUpdateQueueRunning = false
-								return
+							// 도시군별 최상위 값
+							if(tr.indexOf(`<th colspan="6">`) !== -1){
+								let topName = tr.split(`<th colspan="6">`)[1].split('</th>')[0]
+								toppestAreaName = topName
+								areaData[toppestAreaName]= {}
+								continue
 							}
 
-							// 글로벌 업데이트가 남아있다면
-							let nextUpdateWork = globalUpdateQueue.shift()
-							nextUpdateWork()
+							// 최하위 아이템 값
+							// !:패턴 중요 값이 3개씩 존재
+							tr = tr.split('</tr>')[0]
+
+							let parseTR = tr.split('<th>')
+							for(let itemLevel=0; itemLevel<=parseTR.length-1; itemLevel++){
+								let item = tr.split('<th>')[itemLevel].split('</td>')[0]
+
+								if(typeof item != 'string') continue
+								if(item.indexOf(`nbsp`) != -1) continue
+								if(item.indexOf(`</th>`) == -1) continue
+
+								item = item.split(`\n`).join('').split('</th><td>')
+								areaData[toppestAreaName][item[0]] = item[1]
+							}
 						}
-						return
+
+						fullData.push(areaData)
+
+						if(pageNum === maxPageNum){
+							let dataSchema = {
+								timestamp: (new Date()).getTime(),
+								data: fullData,
+								map: self.dataJson
+							}
+							database.metadata.set(`life.${dataId}`, dataSchema)
+
+							if(typeof callback === 'function')
+								callback(dataSchema)
+
+							for(let preCommand of self.preCommandQueue)
+								if(typeof preCommand === 'function')
+									preCommand(dataSchema)
+
+							self.preCommandQueue = []
+							self.isLoaded = true
+							self.isLoading = false
+							Logger.log(`기상청에서 ${dataName} 정보를 모두 받아왔습니다.`, `[Backend:Industry]`)
+
+							// 모든 글로벌 업데이트가 끝났다면
+							if(isGentlyWork){
+								if(globalUpdateQueue.length == 0){
+									isGlobalUpdateQueueRunning = false
+									return
+								}
+
+								// 글로벌 업데이트가 남아있다면
+								let nextUpdateWork = globalUpdateQueue.shift()
+								nextUpdateWork()
+							}
+							return
+						}
+					}catch(e){
+						Logger.log(`기상청에서 받아온 ${dataName} 지도화용 정보를 일부 해석하는데 실패했습니다.`, `[Backend:Industry]`)
+						console.log(e)
 					}
 
 					setTimeout(()=>{

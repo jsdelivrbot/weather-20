@@ -287,7 +287,7 @@ export class AWSLive{
 			self.get(self.database, (data)=>{
 				let requestSchema = request.body
 				if(requestSchema === undefined || requestSchema === null) {
-					Logger.log(`잘못된 유형의 ${option.dataName} 요청발생`)
+					Logger.log(`잘못된 유형의 ${option.dataName} 요청발생`, `[Backend:AWSLive]`)
 					response.send(null)
 					response.end()
 					return
@@ -443,7 +443,7 @@ export class AWSLive{
 						body = iconv.decode(body, 'EUC-KR').toString()
 						if(body == null || body == undefined || typeof body != 'string') throw new Error()
 					}catch(e){
-						Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`)
+						Logger.log(`기상청에서 받은 ${dataName}의 인코딩해석에 실패했습니다.`, `[Backend:AWSLive]`)
 						console.log(body)
 						return
 					}
@@ -541,7 +541,7 @@ export class AWSLive{
 							parsedDataSheets.push(parsedDataSheet)
 						}
 
-						Logger.log(`기상청에서 ${dataName}를 받아왔습니다. 좌표확인된정보:${coordAddedCount}개 (좌표미확인정보:${coordNonAddedCount}개)`)
+						Logger.log(`기상청에서 ${dataName}를 받아왔습니다. 좌표확인된정보:${coordAddedCount}개 (좌표미확인정보:${coordNonAddedCount}개)`, `[Backend:AWSLive]`)
 
 						for(let parsedDataSheet of parsedDataSheets){
 							// 좌표 있는 자료만
@@ -565,7 +565,7 @@ export class AWSLive{
 						}
 						database.metadata.set(`awslive.${dataId}`, dataSchema)
 					}catch(e){
-						Logger.log(`기상청에서 받아온 ${dataName}를 해석하는데 실패했습니다.`)
+						Logger.log(`기상청에서 받아온 ${dataName}를 해석하는데 실패했습니다.`, `[Backend:AWSLive]`)
 						console.log(e)
 					}
 				})
@@ -593,6 +593,6 @@ export function File(app, database) {
 		listPath,
 		dataName: `전국관측소 분단위 갱신정보`,
 		dataId: `awslive`,
-		repeatDelay: 5000
+		repeatDelay: 20000
 	})
 }

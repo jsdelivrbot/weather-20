@@ -79,7 +79,7 @@ export function RequestStationData(database, paramLat, paramLong, callback){
 					// JSON 형태로 변환합니다.
 					parseString(body, (err, result) => {
 						if(result === null || result === undefined || typeof result['metadata'] === 'undefined'){
-							console.log('데이터 획득실패')
+							Logger.log('데이터 획득실패', `[Backend:Forest]`)
 							return
 						}
 						for(let item of result.metadata.outputData[0].items){
@@ -116,6 +116,7 @@ export function RequestStationData(database, paramLat, paramLong, callback){
 							data: parsedStationDatas
 						}
 						database.metadata.set(`forest.station.${stationName}`, dataSchema)
+						Logger.log(`산림청에서 ${stationName} 산불위험지수 정보를 얻어왔습니다.`, `[Backend:Forest]`)
 	
 						if(typeof callback === 'function')
 							callback(parsedStationDatas[stationName])
@@ -123,6 +124,9 @@ export function RequestStationData(database, paramLat, paramLong, callback){
 				})
 
 			}catch(e){
+				Logger.log(`산림청에서 ${stationName} 산불위험지수 정보를 얻어오는데 실패했습니다.`, `[Backend:Forest]`)
+				console.log(e)
+
 				// 확인할 수 없는 정보임을 클라이언트에 알립니다.
 				if(typeof callback === 'function')
 					callback(null)

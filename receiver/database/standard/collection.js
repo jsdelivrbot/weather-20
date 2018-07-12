@@ -37,6 +37,12 @@ export default class Collection extends Identification{
 				// 정의되어 있지 않은 경우 초기화
 				if(typeof data[dataType] != 'object')
 					data[dataType] = []
+			
+			console.log(`${self.collectionId}.${channelId}`)
+			console.log(dataType)
+			console.log(data)
+			console.log(accountId)
+			console.log(data[dataType])
 
 				// 만약 이미 추가가 되어 있다면 반환
 				if(data[dataType].indexOf(accountId) !== -1){
